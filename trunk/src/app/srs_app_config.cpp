@@ -2125,6 +2125,18 @@ int SrsConfig::get_max_connections()
     return ::atoi(conf->arg0().c_str());
 }
 
+std::string SrsConfig::get_external_shell()
+{
+    srs_assert(root);
+
+    SrsConfDirective* conf = root->get("external_shell");
+    if (!conf || conf->arg0().empty()) {
+        return std::string("");
+    }
+
+    return conf->arg0();
+}
+
 vector<string> SrsConfig::get_listens()
 {
     std::vector<string> ports;

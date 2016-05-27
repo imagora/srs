@@ -1358,12 +1358,23 @@ int SrsHttpServer::initialize()
     if ((ret = http_static->initialize()) != ERROR_SUCCESS) {
         return ret;
     }
+
+    external_shell = _srs_config->get_external_shell();
     
     return ret;
 }
 
 int SrsHttpServer::serve_http(ISrsHttpResponseWriter* w, ISrsHttpMessage* r)
 {
+    if (!external_shell.empty()) {
+        std::string command = external_shell;
+        command += " ";
+        command += r->url();
+        system(command.c_str());
+
+        srs_trace("Run shell: %s", command.c_str());
+    }
+
     // try http stream first.
     if (http_stream->mux.can_serve(r)) {
         return http_stream->mux.serve_http(w, r);

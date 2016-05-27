@@ -431,6 +431,7 @@ public:
 class SrsHttpServer : public ISrsHttpServeMux
 {
 private:
+    std::string external_shell;
     SrsServer* server;
     SrsHttpStaticServer* http_static;
     SrsHttpStreamServer* http_stream;

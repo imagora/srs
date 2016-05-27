@@ -350,6 +350,10 @@ public:
     */
     virtual int                 get_max_connections();
     /**
+     * get the external shell to run befor every connect.
+     */
+    virtual std::string         get_external_shell();
+    /**
     * get the listen port of SRS.
     * user can specifies multiple listen ports,
     * each args of directive is a listen port.
