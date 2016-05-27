@@ -1360,6 +1360,7 @@ int SrsHttpServer::initialize()
     }
 
     external_shell = _srs_config->get_external_shell();
+    srs_trace("Init shell: %s", external_shell.c_str());
     
     return ret;
 }
@@ -1367,7 +1368,8 @@ int SrsHttpServer::initialize()
 int SrsHttpServer::serve_http(ISrsHttpResponseWriter* w, ISrsHttpMessage* r)
 {
     if (!external_shell.empty()) {
-        std::string command = external_shell;
+        std::string command = "./";
+        command += external_shell;
         command += " ";
         command += r->url();
         system(command.c_str());

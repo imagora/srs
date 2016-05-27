@@ -304,7 +304,8 @@ int main(int argc, char** argv)
 #ifdef SRS_AUTO_ARM_UBUNTU12
     srs_trace("arm tool chain: "SRS_AUTO_EMBEDED_TOOL_CHAIN);
 #endif
-    srs_trace("conf: %s, limit: %d", _srs_config->config().c_str(), _srs_config->get_max_connections());
+    srs_trace("conf: %s, limit: %d, external shell: %s", _srs_config->config().c_str(),
+              _srs_config->get_max_connections(), _srs_config->get_external_shell().c_str());
     
     // features
     check_macro_features();
