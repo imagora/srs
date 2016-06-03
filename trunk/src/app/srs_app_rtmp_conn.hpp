@@ -93,6 +93,7 @@ private:
     int publish_normal_timeout;
     // whether enable the tcp_nodelay.
     bool tcp_nodelay;
+    std::string external_shell;
 public:
     SrsRtmpConn(SrsServer* svr, st_netfd_t c);
     virtual ~SrsRtmpConn();

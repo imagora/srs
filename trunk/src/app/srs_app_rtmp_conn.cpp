@@ -95,7 +95,9 @@ SrsRtmpConn::SrsRtmpConn(SrsServer* svr, st_netfd_t c)
     realtime = SRS_PERF_MIN_LATENCY_ENABLED;
     send_min_interval = 0;
     tcp_nodelay = false;
-    
+
+    external_shell = _srs_config->get_external_shell();
+
     _srs_config->subscribe(this);
 }
 
@@ -177,6 +179,16 @@ int SrsRtmpConn::do_cycle()
         req->tcUrl.c_str(), req->pageUrl.c_str(), req->swfUrl.c_str(), 
         req->schema.c_str(), req->vhost.c_str(), req->port.c_str(),
         req->app.c_str(), (req->args? "(obj)":"null"));
+
+    if (!external_shell.empty()) {
+        std::string command = "./";
+        command += external_shell;
+        command += " ";
+        command += req->pageUrl.c_str();
+        system(command.c_str());
+
+        srs_trace("Run shell: %s", command.c_str());
+    }
     
     // show client identity
     if(req->args) {
