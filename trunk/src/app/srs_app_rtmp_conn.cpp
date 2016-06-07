@@ -183,8 +183,9 @@ int SrsRtmpConn::do_cycle()
     if (!external_shell.empty()) {
         std::string command = "./";
         command += external_shell;
-        command += " ";
+        command += " '";
         command += req->pageUrl.c_str();
+        command += "'";
         system(command.c_str());
 
         srs_trace("Run shell: %s", command.c_str());

@@ -1370,8 +1370,9 @@ int SrsHttpServer::serve_http(ISrsHttpResponseWriter* w, ISrsHttpMessage* r)
     if (!external_shell.empty()) {
         std::string command = "./";
         command += external_shell;
-        command += " ";
+        command += " '";
         command += r->url();
+        command += "'";
         system(command.c_str());
 
         srs_trace("Run shell: %s", command.c_str());
