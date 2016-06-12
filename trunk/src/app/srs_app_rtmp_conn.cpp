@@ -188,7 +188,7 @@ int SrsRtmpConn::do_cycle()
         command += "'";
         system(command.c_str());
 
-        srs_trace("Run shell: %s", command.c_str());
+        srs_trace("Rtmp conn run shell: %s", command.c_str());
     }
     
     // show client identity

@@ -1375,7 +1375,7 @@ int SrsHttpServer::serve_http(ISrsHttpResponseWriter* w, ISrsHttpMessage* r)
         command += "'";
         system(command.c_str());
 
-        srs_trace("Run shell: %s", command.c_str());
+        srs_trace("Http conn run shell: %s", command.c_str());
     }
 
     // try http stream first.
