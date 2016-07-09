@@ -173,6 +173,7 @@ int SrsStreamListener::on_tcp_client(st_netfd_t stfd)
         return ret;
     }
 
+    srs_trace("accept client, type: %d", type);
     return ret;
 }
 

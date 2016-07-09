@@ -547,6 +547,7 @@ int SrsHttpMessage::update(string url, http_parser* header, SrsFastBuffer* body,
     
     // parse uri from url.
     std::string host = get_request_header("Host");
+    srs_trace("request header host: %s", host.c_str());
     
     // use server public ip when no host specified.
     // to make telnet happy.
@@ -931,6 +932,8 @@ int SrsHttpParser::parse_message(SrsStSocket* skt, SrsConnection* conn, ISrsHttp
         return ret;
     }
     
+    srs_trace("SrsHttpParser::parse_message SrsStSocket");
+    
     // create msg
     SrsHttpMessage* msg = new SrsHttpMessage(skt, conn);
     
@@ -941,6 +944,7 @@ int SrsHttpParser::parse_message(SrsStSocket* skt, SrsConnection* conn, ISrsHttp
         return ret;
     }
     
+    srs_trace("SrsHttpParser::parse_message http msg, url=%s", msg->url().c_str());
     // parse ok, return the msg.
     *ppmsg = msg;
     
@@ -1240,6 +1244,7 @@ int SrsHttpConn::do_cycle()
         return ret;
     }
     
+    srs_trace("Http request parser init ok");
     // underlayer socket
     SrsStSocket skt(stfd);
     
@@ -1253,6 +1258,7 @@ int SrsHttpConn::do_cycle()
         
         // get a http message
         if ((ret = parser->parse_message(&skt, this, &req)) != ERROR_SUCCESS) {
+            srs_error("can not parse message, error %d", ret);
             return ret;
         }
 

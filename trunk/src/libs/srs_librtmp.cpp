@@ -48,9 +48,10 @@ using namespace std;
 #include <srs_kernel_file.hpp>
 #include <srs_lib_bandwidth.hpp>
 #include <srs_raw_avc.hpp>
+#include <srs_lib_log.hpp>
 
 // kernel module.
-ISrsLog* _srs_log = new ISrsLog();
+ISrsLog* _srs_log = new SrsSysLog();
 ISrsThreadContext* _srs_context = new ISrsThreadContext();
 
 /**
