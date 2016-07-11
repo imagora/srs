@@ -3954,10 +3954,10 @@ int SrsFMLEStartResPacket::decode(SrsStream* stream)
         return ret;
     }
     
-    if ((ret = srs_amf0_read_undefined(stream)) != ERROR_SUCCESS) {
-        srs_error("amf0 decode FMLE start response stream_id failed. ret=%d", ret);
-        return ret;
-    }
+    //if ((ret = srs_amf0_read_undefined(stream)) != ERROR_SUCCESS) {
+    //    srs_error("amf0 decode FMLE start response stream_id failed. ret=%d", ret);
+    //    return ret;
+    //}
     
     srs_info("amf0 decode FMLE start packet success");
     

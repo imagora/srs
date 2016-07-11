@@ -41,7 +41,7 @@ SrsSysLog::~SrsSysLog()
 
 int SrsSysLog::initialize()
 {
-    ::openlog(nullptr, LOG_PID|LOG_NDELAY, LOG_USER|LOG_DAEMON);
+    ::openlog(NULL, LOG_PID|LOG_NDELAY, LOG_USER|LOG_DAEMON);
     return ERROR_SUCCESS;
 }
 
