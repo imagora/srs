@@ -55,6 +55,7 @@ public:
     /**
     * whether the frame is sps or pps.
     */
+    virtual bool is_sei(char* frame, int nb_frame);
     virtual bool is_sps(char* frame, int nb_frame);
     virtual bool is_pps(char* frame, int nb_frame);
     /**

@@ -1350,6 +1350,11 @@ int srs_write_h264_raw_frame(Context* context,
         return ret;
     }
     
+    // ignore SEI message
+    if (context->avc_raw.is_sei((frame, frame_size)) {
+        return ret;
+    }
+        
     // send pps+sps before ipb frames when sps/pps changed.
     if ((ret = srs_write_h264_sps_pps(context, dts, pts)) != ERROR_SUCCESS) {
         return ret;

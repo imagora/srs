@@ -75,6 +75,18 @@ int SrsRawH264Stream::annexb_demux(SrsStream* stream, char** pframe, int* pnb_fr
     return ret;
 }
 
+bool SrsRawH264Stream::is_sei(char* frame, int nb_frame)
+{
+    srs_assert(nb_frame > 0);
+  
+    // 5bits, 7.3.1 NAL unit syntax,
+    // H.264-AVC-ISO_IEC_14496-10.pdf, page 44.
+    // 6: SEI, 7: SPS, 8: PPS, 5: I Frame, 1: P Frame
+    u_int8_t nal_unit_type = (char)frame[0] & 0x1f;
+  
+    return nal_unit_type == 6;
+}
+
 bool SrsRawH264Stream::is_sps(char* frame, int nb_frame)
 {
     srs_assert(nb_frame > 0);
