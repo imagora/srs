@@ -50,9 +50,7 @@ public:
     virtual void warn(const char* tag, int context_id, const char* fmt, ...);
     
     virtual void error(const char* tag, int context_id, const char* fmt, ...);
-    
-private:
-    void log(int level, const char* format, ...);
+
 };
 
 #endif

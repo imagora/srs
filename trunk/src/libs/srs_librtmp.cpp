@@ -1032,7 +1032,7 @@ int srs_rtmp_write_packet(srs_rtmp_t rtmp, char type, u_int32_t timestamp, char*
     }
 
     srs_assert(msg);
-    srs_error("type: %u, lenght: %u", type, size);
+    srs_error("srs rtmp write packet type: %u, length: %u", uint32_t(type), uint32_t(size));
 
     // send out encoded msg.
     if ((ret = context->rtmp->send_and_free_message(msg, context->stream_id)) != ERROR_SUCCESS) {

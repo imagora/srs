@@ -23,8 +23,8 @@
 
 #include "srs_lib_log.hpp"
 #include <srs_kernel_error.hpp>
-#include <syslog.h>
 #include <stdarg.h>
+#include <syslog.h>
 
 
 SrsSysLog::SrsSysLog()
@@ -50,7 +50,7 @@ void SrsSysLog::verbose(const char* tag, int context_id, const char* fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
-    log(LOG_DEBUG, fmt, args);
+    ::vsyslog(LOG_DEBUG, fmt, args);
     va_end(args);
 }
 
@@ -59,7 +59,7 @@ void SrsSysLog::info(const char* tag, int context_id, const char* fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
-    log(LOG_INFO, fmt, args);
+    ::vsyslog(LOG_INFO, fmt, args);
     va_end(args);
 }
 
@@ -68,7 +68,7 @@ void SrsSysLog::trace(const char* tag, int context_id, const char* fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
-    log(LOG_NOTICE, fmt, args);
+    ::vsyslog(LOG_NOTICE, fmt, args);
     va_end(args);
 }
 
@@ -77,7 +77,7 @@ void SrsSysLog::warn(const char* tag, int context_id, const char* fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
-    log(LOG_WARNING, fmt, args);
+    ::vsyslog(LOG_WARNING, fmt, args);
     va_end(args);
 }
 
@@ -86,15 +86,7 @@ void SrsSysLog::error(const char* tag, int context_id, const char* fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
-    log(LOG_ERR, fmt, args);
+    ::vsyslog(LOG_ERR, fmt, args);
     va_end(args);
 }
 
-
-void SrsSysLog::log(int level, const char *format, ...)
-{
-    va_list args;
-    va_start(args, format);
-    ::vsyslog(level, format, args);
-    va_end(args);
-}
