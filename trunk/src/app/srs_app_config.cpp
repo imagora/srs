@@ -1363,7 +1363,7 @@ int SrsConfig::parse_options(int argc, char** argv)
     }
     
     // first hello message.
-    srs_trace(_srs_version);
+    srs_trace("%s", _srs_version);
     
     if (config_file.empty()) {
         ret = ERROR_SYSTEM_CONFIG_INVALID;
