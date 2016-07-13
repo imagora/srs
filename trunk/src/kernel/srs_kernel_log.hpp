@@ -131,7 +131,7 @@ extern ISrsLog* _srs_log;
 extern ISrsThreadContext* _srs_context;
 
 // donot print method
-#if 1
+#if 0
     #define srs_verbose(msg, ...) _srs_log->verbose(NULL, _srs_context->get_id(), msg, ##__VA_ARGS__)
     #define srs_info(msg, ...)    _srs_log->info(NULL, _srs_context->get_id(), msg, ##__VA_ARGS__)
     #define srs_trace(msg, ...)   _srs_log->trace(NULL, _srs_context->get_id(), msg, ##__VA_ARGS__)
@@ -144,6 +144,12 @@ extern ISrsThreadContext* _srs_context;
     #define srs_trace(msg, ...)   _srs_log->trace(__FUNCTION__, _srs_context->get_id(), msg, ##__VA_ARGS__)
     #define srs_warn(msg, ...)    _srs_log->warn(__FUNCTION__, _srs_context->get_id(), msg, ##__VA_ARGS__)
     #define srs_error(msg, ...)   _srs_log->error(__FUNCTION__, _srs_context->get_id(), msg, ##__VA_ARGS__)
+#elif 1
+    #define srs_verbose(msg, ...) _srs_log->verbose(NULL, _srs_context->get_id(), "%s:%d: " msg, __FILE__, __LINE__, ##__VA_ARGS__)
+    #define srs_info(msg, ...)    _srs_log->info(NULL, _srs_context->get_id(), "%s:%d: " msg, __FILE__, __LINE__, ##__VA_ARGS__)
+    #define srs_trace(msg, ...)   _srs_log->trace(NULL, _srs_context->get_id(), "%s:%d: " msg, __FILE__, __LINE__, ##__VA_ARGS__)
+    #define srs_warn(msg, ...)    _srs_log->warn(NULL, _srs_context->get_id(), "%s:%d: " msg, __FILE__, __LINE__, ##__VA_ARGS__)
+    #define srs_error(msg, ...)   _srs_log->error(NULL, _srs_context->get_id(), "%s:%d: " msg, __FILE__, __LINE__, ##__VA_ARGS__)
 // use __PRETTY_FUNCTION__ to print c++ class:method
 #else
     #define srs_verbose(msg, ...) _srs_log->verbose(__PRETTY_FUNCTION__, _srs_context->get_id(), msg, ##__VA_ARGS__)
