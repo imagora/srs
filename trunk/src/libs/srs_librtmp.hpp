@@ -112,6 +112,10 @@ extern srs_rtmp_t srs_rtmp_create2(const char* url);
 * @remark, user should never use the rtmp again.
 */
 extern void srs_rtmp_destroy(srs_rtmp_t rtmp);
+/**
+* get rtmp url.
+*/
+extern const char* srs_rtmp_url(srs_rtmp_t rtmp);
 
 /*************************************************************
 **************************************************************

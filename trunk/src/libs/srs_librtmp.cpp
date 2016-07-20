@@ -567,6 +567,12 @@ void srs_rtmp_destroy(srs_rtmp_t rtmp)
     srs_freep(context);
 }
 
+const char* srs_rtmp_url(srs_rtmp_t rtmp)
+{
+    Context* context = (Context*)rtmp;
+    return context->url.c_str();
+}
+
 int srs_rtmp_handshake(srs_rtmp_t rtmp)
 {
     int ret = ERROR_SUCCESS;
