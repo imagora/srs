@@ -48,6 +48,13 @@ using namespace std;
 #include <srs_raw_avc.hpp>
 #include <srs_app_http_conn.hpp>
 
+//#define SRS_AUTO_STREAM_CASTER 1
+
+//#include <srs_app_caster_flv.hpp>
+#include <srs_app_caster_flv.hpp>
+
+#define SRS_HTTP_FLV_STREAM_BUFFER 4096
+
 // pre-declare
 int proxy_hls2rtmp(std::string hls, std::string rtmp);
 
@@ -108,6 +115,10 @@ int main(int argc, char** argv)
             default: break;
         }
     }
+
+    in_hls_url = "http://httpflv.fastweb.com.cn.cloudcdn.net/live_fw/mosaic";
+    out_rtmp_url = "mosaic.flv";
+
     
     if (in_hls_url.empty() || out_rtmp_url.empty()) {
         printf("ingest hls live stream and publish to RTMP server\n"
@@ -125,6 +136,116 @@ int main(int argc, char** argv)
     srs_trace("output: %s", out_rtmp_url.c_str());
     
     return proxy_hls2rtmp(in_hls_url, out_rtmp_url);
+}
+
+/**
+ * the http wrapper for file reader,
+ * to read http post stream like a file.
+ */
+class SrsHttpFileReader : public SrsFileReader
+{
+private:
+    ISrsHttpResponseReader* http;
+public:
+    SrsHttpFileReader(ISrsHttpResponseReader* h);
+    virtual ~SrsHttpFileReader();
+public:
+    /**
+     * open file reader, can open then close then open...
+     */
+    virtual int open(std::string file);
+    virtual void close();
+public:
+    // TODO: FIXME: extract interface.
+    virtual bool is_open();
+    virtual int64_t tellg();
+    virtual void skip(int64_t size);
+    virtual int64_t lseek(int64_t offset);
+    virtual int64_t filesize();
+public:
+    /**
+     * read from file.
+     * @param pnread the output nb_read, NULL to ignore.
+     */
+    virtual int read(void* buf, size_t count, ssize_t* pnread);
+};
+
+SrsHttpFileReader::SrsHttpFileReader(ISrsHttpResponseReader* h)
+{
+    http = h;
+}
+
+SrsHttpFileReader::~SrsHttpFileReader()
+{
+}
+
+int SrsHttpFileReader::open(std::string /*file*/)
+{
+    return ERROR_SUCCESS;
+}
+
+void SrsHttpFileReader::close()
+{
+}
+
+bool SrsHttpFileReader::is_open()
+{
+    return true;
+}
+
+int64_t SrsHttpFileReader::tellg()
+{
+    return 0;
+}
+
+void SrsHttpFileReader::skip(int64_t /*size*/)
+{
+}
+
+int64_t SrsHttpFileReader::lseek(int64_t offset)
+{
+    return offset;
+}
+
+int64_t SrsHttpFileReader::filesize()
+{
+    return 0;
+}
+
+int SrsHttpFileReader::read(void* buf, size_t count, ssize_t* pnread)
+{
+    int ret = ERROR_SUCCESS;
+
+    if (http->eof()) {
+        ret = ERROR_HTTP_REQUEST_EOF;
+        srs_error("flv: encoder EOF. ret=%d", ret);
+        return ret;
+    }
+//    http->enter_infinite_chunked();
+
+
+    int total_read = 0;
+    while (total_read < (int)count) {
+        int nread = 0;
+        if ((ret = http->read((char*)buf + total_read, (int)(count - total_read), &nread)) != ERROR_SUCCESS) {
+            return ret;
+        }
+
+        if (nread == 0) {
+            ret = ERROR_HTTP_REQUEST_EOF;
+            srs_warn("flv: encoder read EOF. ret=%d", ret);
+            break;
+        }
+
+        srs_assert(nread);
+        total_read += nread;
+    }
+
+    if (pnread) {
+        *pnread = total_read;
+    }
+
+    return ret;
 }
 
 class ISrsAacHandler
@@ -195,6 +316,8 @@ public:
      * parse the ts and use hanler to process the message.
      */
     virtual int parse(ISrsTsHandler* ts, ISrsAacHandler* aac);
+
+    int do_proxy(ISrsHttpResponseReader* rr, SrsFlvDecoder* dec);
 private:
     /**
      * parse the ts pieces body.
@@ -223,6 +346,47 @@ private:
     virtual void remove_dirty();
 };
 
+int SrsIngestSrsInput::do_proxy(ISrsHttpResponseReader* rr, SrsFlvDecoder* dec)
+{
+    int ret = ERROR_SUCCESS;
+
+    char pps[4];
+    while (!rr->eof()) {
+
+//        if ((ret = connect()) != ERROR_SUCCESS) {
+//            return ret;
+//        }
+
+        char type;
+        int32_t size;
+        u_int32_t time;
+        if ((ret = dec->read_tag_header(&type, &size, &time)) != ERROR_SUCCESS) {
+            if (!srs_is_client_gracefully_close(ret)) {
+                srs_error("flv: proxy tag header failed. ret=%d", ret);
+            }
+            return ret;
+        }
+
+        char* data = new char[size];
+        if ((ret = dec->read_tag_data(data, size)) != ERROR_SUCCESS) {
+            srs_freepa(data);
+            if (!srs_is_client_gracefully_close(ret)) {
+                srs_error("flv: proxy tag data failed. ret=%d", ret);
+            }
+            return ret;
+        }
+
+        if ((ret = dec->read_previous_tag_size(pps)) != ERROR_SUCCESS) {
+            if (!srs_is_client_gracefully_close(ret)) {
+                srs_error("flv: proxy tag header pps failed. ret=%d", ret);
+            }
+            return ret;
+        }
+    }
+
+    return ret;
+}
+
 int SrsIngestSrsInput::connect()
 {
     int ret = ERROR_SUCCESS;
@@ -232,28 +396,112 @@ int SrsIngestSrsInput::connect()
         srs_trace("input hls wait for %dms", next_connect_time - now);
         st_usleep((next_connect_time - now) * 1000);
     }
-    
-    // set all ts to dirty.
-    dirty_all_ts();
-    
-    bool fresh_m3u8 = pieces.empty();
-    double td = 0.0;
-    double duration = 0.0;
-    if ((ret = parseM3u8(in_hls, td, duration)) != ERROR_SUCCESS) {
+
+
+    // parse flv stream
+
+
+    SrsHttpClient client;
+    srs_trace("parse input hls %s", in_hls->get_url());
+
+    if ((ret = client.initialize(in_hls->get_host(), in_hls->get_port())) != ERROR_SUCCESS) {
+        srs_error("connect to server failed. ret=%d", ret);
         return ret;
     }
-    
-    // fetch all ts.
-    if ((ret = fetch_all_ts(fresh_m3u8)) != ERROR_SUCCESS) {
-        srs_error("fetch all ts failed. ret=%d", ret);
+
+    ISrsHttpMessage* msg = NULL;
+    if ((ret = client.get(in_hls->get_path(), "", &msg)) != ERROR_SUCCESS) {
+        srs_error("HTTP GET %s failed. ret=%d", in_hls->get_url(), ret);
         return ret;
     }
-    
-    // remove all dirty ts.
-    remove_dirty();
-    
-    srs_trace("fetch m3u8 ok, td=%.2f, duration=%.2f, pieces=%d", td, duration, pieces.size());
-    
+
+    srs_assert(msg);
+    SrsAutoFree(ISrsHttpMessage, msg);
+
+//    std::string body;
+//    if ((ret = msg->body_read_all(body)) != ERROR_SUCCESS) {
+//        srs_error("read m3u8 failed. ret=%d", ret);
+//        return ret;
+//    }
+//
+//    if (body.empty()) {
+//        srs_warn("ignore empty m3u8");
+//        return ret;
+//    }
+
+
+    //
+    //
+    //
+
+    srs_trace("flv: proxy uri: %s ", msg->uri().c_str());
+    srs_trace("flv: proxy path: %s ", msg->uri().c_str());
+
+    char* buffer = new char[SRS_HTTP_FLV_STREAM_BUFFER];
+    SrsAutoFreeA(char, buffer);
+
+//    std::string body;
+//    if ((ret = msg->body_read_all(body)) != ERROR_SUCCESS) {
+//        srs_error("read m3u8 failed. ret=%d", ret);
+//        return ret;
+//    }
+
+    ISrsHttpResponseReader* rr = msg->body_reader();
+    SrsHttpFileReader reader(rr);
+
+    SrsFlvDecoder dec;
+
+    if ((ret = dec.initialize(&reader)) != ERROR_SUCCESS) {
+        return ret;
+    }
+
+    char header[9];
+    if ((ret = dec.read_header(header)) != ERROR_SUCCESS) {
+        if (!srs_is_client_gracefully_close(ret)) {
+            srs_error("flv: proxy flv header failed. ret=%d", ret);
+        }
+        return ret;
+    }
+    srs_trace("flv: proxy drop flv header.");
+
+    char pps[4];
+    if ((ret = dec.read_previous_tag_size(pps)) != ERROR_SUCCESS) {
+        if (!srs_is_client_gracefully_close(ret)) {
+            srs_error("flv: proxy flv header pps failed. ret=%d", ret);
+        }
+        return ret;
+    }
+
+//    ret = do_proxy(rr, &dec);
+//    close();
+
+
+
+
+
+
+
+//    // set all ts to dirty.
+//    dirty_all_ts();
+//    
+//    bool fresh_m3u8 = pieces.empty();
+//    double td = 0.0;
+//    double duration = 0.0;
+//    if ((ret = parseM3u8(in_hls, td, duration)) != ERROR_SUCCESS) {
+//        return ret;
+//    }
+//    
+//    // fetch all ts.
+//    if ((ret = fetch_all_ts(fresh_m3u8)) != ERROR_SUCCESS) {
+//        srs_error("fetch all ts failed. ret=%d", ret);
+//        return ret;
+//    }
+//    
+//    // remove all dirty ts.
+//    remove_dirty();
+//    
+//    srs_trace("fetch m3u8 ok, td=%.2f, duration=%.2f, pieces=%d", td, duration, pieces.size());
+
     return ret;
 }
 
@@ -1350,25 +1598,25 @@ public:
         int ret = ERROR_SUCCESS;
         
         if ((ret = ic->connect()) != ERROR_SUCCESS) {
-            srs_error("connect oc failed. ret=%d", ret);
-            return ret;
-        }
-        
-        if ((ret = oc->connect()) != ERROR_SUCCESS) {
             srs_error("connect ic failed. ret=%d", ret);
             return ret;
         }
         
-        if ((ret = ic->parse(oc, oc)) != ERROR_SUCCESS) {
-            srs_error("proxy ts to rtmp failed. ret=%d", ret);
-            return ret;
-        }
-        
-        if ((ret = oc->flush_message_queue()) != ERROR_SUCCESS) {
-            srs_error("flush oc message failed. ret=%d", ret);
-            return ret;
-        }
-        
+//        if ((ret = oc->connect()) != ERROR_SUCCESS) {
+//            srs_error("connect ic failed. ret=%d", ret);
+//            return ret;
+//        }
+
+//        if ((ret = ic->parse(oc, oc)) != ERROR_SUCCESS) {
+//            srs_error("proxy ts to rtmp failed. ret=%d", ret);
+//            return ret;
+//        }
+
+//        if ((ret = oc->flush_message_queue()) != ERROR_SUCCESS) {
+//            srs_error("flush oc message failed. ret=%d", ret);
+//            return ret;
+//        }
+
         return ret;
     }
 };
@@ -1388,11 +1636,11 @@ int proxy_hls2rtmp(string hls, string rtmp)
         srs_error("hls uri invalid. ret=%d", ret);
         return ret;
     }
-    if ((ret = rtmp_uri.initialize(rtmp)) != ERROR_SUCCESS) {
-        srs_error("rtmp uri invalid. ret=%d", ret);
-        return ret;
-    }
-    
+//    if ((ret = rtmp_uri.initialize(rtmp)) != ERROR_SUCCESS) {
+//        srs_error("rtmp uri invalid. ret=%d", ret);
+//        return ret;
+//    }
+
     SrsIngestSrsContext context(&hls_uri, &rtmp_uri);
     for (;;) {
         if ((ret = context.proxy()) != ERROR_SUCCESS) {

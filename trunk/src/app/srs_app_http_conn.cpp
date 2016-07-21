@@ -360,6 +360,7 @@ int SrsHttpResponseReader::read(char* data, int nb_data, int* nb_read)
         return read_specified(data, nb_data, nb_read);
     }
     
+    
     // infinite chunked mode, directly read.
     if (owner->is_infinite_chunked()) {
         srs_assert(!owner->is_chunked() && owner->content_length() == -1);
