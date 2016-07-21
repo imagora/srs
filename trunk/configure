@@ -195,7 +195,7 @@ fi
 MODULE_ID="LIBS" 
 MODULE_DEPENDS=("CORE" "KERNEL" "PROTOCOL") 
 ModuleLibIncs=(${SRS_OBJS_DIR})
-MODULE_FILES=("srs_librtmp" "srs_lib_simple_socket" "srs_lib_bandwidth")
+MODULE_FILES=("srs_librtmp" "srs_lib_simple_socket" "srs_lib_bandwidth" "srs_lib_log")
 LIBS_INCS="src/libs"; MODULE_DIR=${LIBS_INCS} . auto/modules.sh
 LIBS_OBJS="${MODULE_OBJS[@]}"
 #
