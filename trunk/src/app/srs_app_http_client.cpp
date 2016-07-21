@@ -141,6 +141,7 @@ int SrsHttpClient::get(string path, std::string req, ISrsHttpMessage** ppmsg)
         << SRS_HTTP_CRLF
         << req;
 
+    srs_info("%s", ss.str().c_str());
     std::string data = ss.str();
     if ((ret = skt->write((void*)data.c_str(), data.length(), NULL)) != ERROR_SUCCESS) {
         // disconnect when error.
