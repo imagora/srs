@@ -23,12 +23,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <srs_core.hpp>
 
-#include <stdlib.h>
-#include <string>
-#include <vector>
-#include <map>
-using namespace std;
-
 #include <srs_kernel_error.hpp>
 #include <srs_app_server.hpp>
 #include <srs_app_config.hpp>
@@ -53,6 +47,13 @@ using namespace std;
 //#include <srs_app_caster_flv.hpp>
 #include <srs_app_caster_flv.hpp>
 
+#include <stdlib.h>
+#include <string>
+#include <vector>
+#include <map>
+
+using namespace std;
+
 #define SRS_HTTP_FLV_STREAM_BUFFER 4096
 
 // pre-declare
@@ -62,8 +63,8 @@ int proxy_hls2rtmp(std::string hls, std::string rtmp);
 // never subscribe handler in constructor,
 // instead, subscribe handler in initialize method.
 // kernel module.
-//ISrsLog* _srs_log = new SrsFastLog();
-//ISrsThreadContext* _srs_context = new ISrsThreadContext();
+ISrsLog* _srs_log = new SrsFastLog();
+ISrsThreadContext* _srs_context = new ISrsThreadContext();
 // app module.
 SrsConfig* _srs_config = NULL;
 SrsServer* _srs_server = NULL;
@@ -117,13 +118,6 @@ int main(int argc, char** argv)
     }
 
     in_hls_url = "http://httpflv.fastweb.com.cn.cloudcdn.net/live_fw/mosaic";
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-            //    http://httpflv.fastweb.com.cn.cloudcdn.net/live_fw/agora
->>>>>>> 2.0release
-=======
->>>>>>> flv_2.0release
     out_rtmp_url = "mosaic.flv";
 
     
@@ -327,6 +321,8 @@ public:
     virtual int parse(ISrsTsHandler* ts, ISrsAacHandler* aac);
 
     int do_proxy(ISrsHttpResponseReader* rr, SrsFlvDecoder* dec);
+    
+    void parse_data(char *data, int length, int count);
 private:
     /**
      * parse the ts pieces body.
@@ -360,84 +356,40 @@ int SrsIngestSrsInput::do_proxy(ISrsHttpResponseReader* rr, SrsFlvDecoder* dec)
     int ret = ERROR_SUCCESS;
 
     char pps[4];
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-
     int count = 0;
->>>>>>> 2.0release
-=======
->>>>>>> flv_2.0release
     while (!rr->eof()) {
-
-//        if ((ret = connect()) != ERROR_SUCCESS) {
-//            return ret;
-//        }
-
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> flv_2.0release
-        char type;
-        int32_t size;
-        u_int32_t time;
-        if ((ret = dec->read_tag_header(&type, &size, &time)) != ERROR_SUCCESS) {
-<<<<<<< HEAD
-=======
         char tag_header[11];
         char type;
         int32_t size;
         u_int32_t time;
         if ((ret = dec->read_tag_header(&type, &size, &time, tag_header)) != ERROR_SUCCESS) {
->>>>>>> 2.0release
-=======
->>>>>>> flv_2.0release
             if (!srs_is_client_gracefully_close(ret)) {
                 srs_error("flv: proxy tag header failed. ret=%d", ret);
             }
             return ret;
         }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-        char* data = new char[size];
-        if ((ret = dec->read_tag_data(data, size)) != ERROR_SUCCESS) {
-            srs_freepa(data);
-=======
-//            fwrite(tag_header, 1, 11, pf);
-//        flvWriter << tag_header;
         std::vector<char> data(size);
         if ((ret = dec->read_tag_data(&data[0], size)) != ERROR_SUCCESS) {
->>>>>>> 2.0release
-=======
-        char* data = new char[size];
-        if ((ret = dec->read_tag_data(data, size)) != ERROR_SUCCESS) {
-            srs_freepa(data);
->>>>>>> flv_2.0release
             if (!srs_is_client_gracefully_close(ret)) {
                 srs_error("flv: proxy tag data failed. ret=%d", ret);
             }
             return ret;
         }
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
- //           flvWriter << data;
+
         if (static_cast<int>(type) == 9) {
             ostringstream oss;
             oss.str();
             oss << "/tmp/264/" << count << ".264";
 
             pf = std::fopen(oss.str().c_str(), "wb");
-            int offset = 1;
-            fwrite(&data[offset], 1, size - offset, pf);
+            fwrite(&data[0], 1, size, pf);
             std::fclose(pf);
+            
+            parse_data(&data[0], size, count);
+            
             count++;
         }
-//            fwrite(&data[0], 1, size, pf);
->>>>>>> 2.0release
-=======
->>>>>>> flv_2.0release
 
         if ((ret = dec->read_previous_tag_size(pps)) != ERROR_SUCCESS) {
             if (!srs_is_client_gracefully_close(ret)) {
@@ -445,17 +397,87 @@ int SrsIngestSrsInput::do_proxy(ISrsHttpResponseReader* rr, SrsFlvDecoder* dec)
             }
             return ret;
         }
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-//            fwrite(pps, 1, 4, pf);
-//    flvWriter << pps;
->>>>>>> 2.0release
-=======
->>>>>>> flv_2.0release
     }
 
     return ret;
+}
+
+FILE *G = NULL;
+
+
+void SrsIngestSrsInput::parse_data(char *data, int length, int count)
+{
+    if (G == NULL) {
+        G = std::fopen("/tmp/test.h264", "wb");
+    }
+    
+    std::vector<char> raw_data;
+    
+    char *cursor = data;
+    cursor += 1;
+    uint32_t type = static_cast<uint32_t>(*cursor);
+    cursor += 4;
+    
+    if (type == SrsCodecVideoAVCTypeSequenceHeader) {
+        cursor += 5;
+        
+        // sps
+        cursor += 1;
+        uint32_t sps_len = static_cast<uint32_t>(
+            static_cast<uint8_t>(*cursor) << 8 | static_cast<uint8_t>(*(++cursor)));
+        raw_data.push_back(0x00);
+        raw_data.push_back(0x00);
+        raw_data.push_back(0x00);
+        raw_data.push_back(0x01);
+        
+        if (13 + sps_len + 3 > length) {
+            srs_error("SPS parse error: package %d, data length %d, parser length %d", count, length, 13 + sps_len + 3);
+            return;
+        }
+        
+        cursor += 1;
+        std::copy(cursor, cursor + sps_len, std::back_inserter(raw_data));
+        cursor += sps_len;
+        
+        // pps
+        cursor += 1;
+        uint32_t pps_len = static_cast<uint32_t>(
+            static_cast<uint8_t>(*cursor) << 8 | static_cast<uint8_t>(*(++cursor)));
+        raw_data.push_back(0x00);
+        raw_data.push_back(0x00);
+        raw_data.push_back(0x00);
+        raw_data.push_back(0x01);
+        
+        if (13 + sps_len + 3 + pps_len != length) {
+            srs_error("SPS/PPS parse error: package %d, data length %d, parser length %d", count, length, 13 + sps_len + 3 + pps_len);
+            return;
+        }
+        
+        cursor += 1;
+        std::copy(cursor, cursor + pps_len, std::back_inserter(raw_data));
+    }
+    
+    if (type == SrsCodecVideoAVCTypeNALU) {
+        uint32_t ipb_len = static_cast<uint32_t>(
+            static_cast<uint8_t>(*cursor) << 24 | static_cast<uint8_t>(*(++cursor)) << 16 |
+            static_cast<uint8_t>(*(++cursor)) << 8 | static_cast<uint8_t>(*(++cursor)));
+        raw_data.push_back(0x00);
+        raw_data.push_back(0x00);
+        raw_data.push_back(0x00);
+        raw_data.push_back(0x01);
+        
+        if (9 + ipb_len != length) {
+            srs_error("I/P/B parse error: package %d, data length %d, parser length %d, data:[%02X][%02X][%02X][%02X]",
+                      count, length, 9 + ipb_len, static_cast<uint8_t>(data[5]), static_cast<uint8_t>(data[6]),
+                      static_cast<uint8_t>(data[7]), static_cast<uint8_t>(data[8]));
+            return;
+        }
+        
+        cursor += 1;
+        std::copy(cursor, data + length, std::back_inserter(raw_data));
+    }
+    
+    std::fwrite(&raw_data[0], 1, raw_data.size(), G);
 }
 
 int SrsIngestSrsInput::connect()
@@ -500,20 +522,6 @@ int SrsIngestSrsInput::connect()
 //        return ret;
 //    }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> flv_2.0release
-
-    //
-    //
-    //
-
-<<<<<<< HEAD
-=======
->>>>>>> 2.0release
-=======
->>>>>>> flv_2.0release
     srs_trace("flv: proxy uri: %s ", msg->uri().c_str());
     srs_trace("flv: proxy path: %s ", msg->uri().c_str());
 
@@ -535,9 +543,7 @@ int SrsIngestSrsInput::connect()
         return ret;
     }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
+
 //    flvWriter.open("out.flv");
 //    pf = std::fopen("/tmp/test.h264", "wb");
 //    if (!flvWriter.is_open() || pf == NULL)
@@ -545,9 +551,6 @@ int SrsIngestSrsInput::connect()
 //        return -1;
 //    }
 
->>>>>>> 2.0release
-=======
->>>>>>> flv_2.0release
     char header[9];
     if ((ret = dec.read_header(header)) != ERROR_SUCCESS) {
         if (!srs_is_client_gracefully_close(ret)) {
@@ -555,15 +558,7 @@ int SrsIngestSrsInput::connect()
         }
         return ret;
     }
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
 
-//            fwrite(header, 1, 9, pf);
-//    flvWriter << header;
->>>>>>> 2.0release
-=======
->>>>>>> flv_2.0release
     srs_trace("flv: proxy drop flv header.");
 
     char pps[4];
@@ -574,25 +569,7 @@ int SrsIngestSrsInput::connect()
         return ret;
     }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-//    ret = do_proxy(rr, &dec);
-=======
-//            fwrite(pps, 1, 4, pf);
-//    flvWriter << pps;
-
     ret = do_proxy(rr, &dec);
->>>>>>> 2.0release
-=======
-//    ret = do_proxy(rr, &dec);
->>>>>>> flv_2.0release
-//    close();
-
-
-
-
-
-
 
 //    // set all ts to dirty.
 //    dirty_all_ts();
