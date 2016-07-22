@@ -535,7 +535,7 @@ public:
     * read the tag header infos.
     * @remark assert ptype/pdata_size/ptime not NULL.
     */
-    virtual int read_tag_header(char* ptype, int32_t* pdata_size, u_int32_t* ptime);
+    virtual int read_tag_header(char* ptype, int32_t* pdata_size, u_int32_t* ptime, char tag_header[11]);
     /**
     * read the tag data.
     * @remark assert data not NULL.

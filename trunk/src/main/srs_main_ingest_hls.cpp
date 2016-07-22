@@ -117,6 +117,10 @@ int main(int argc, char** argv)
     }
 
     in_hls_url = "http://httpflv.fastweb.com.cn.cloudcdn.net/live_fw/mosaic";
+<<<<<<< HEAD
+=======
+            //    http://httpflv.fastweb.com.cn.cloudcdn.net/live_fw/agora
+>>>>>>> 2.0release
     out_rtmp_url = "mosaic.flv";
 
     
@@ -289,6 +293,8 @@ private:
 private:
     SrsStream* stream;
     SrsTsContext* context;
+
+    FILE *pf;
 public:
     SrsIngestSrsInput(SrsHttpUri* hls) {
         in_hls = hls;
@@ -351,30 +357,66 @@ int SrsIngestSrsInput::do_proxy(ISrsHttpResponseReader* rr, SrsFlvDecoder* dec)
     int ret = ERROR_SUCCESS;
 
     char pps[4];
+<<<<<<< HEAD
+=======
+
+    int count = 0;
+>>>>>>> 2.0release
     while (!rr->eof()) {
 
 //        if ((ret = connect()) != ERROR_SUCCESS) {
 //            return ret;
 //        }
 
+<<<<<<< HEAD
         char type;
         int32_t size;
         u_int32_t time;
         if ((ret = dec->read_tag_header(&type, &size, &time)) != ERROR_SUCCESS) {
+=======
+        char tag_header[11];
+        char type;
+        int32_t size;
+        u_int32_t time;
+        if ((ret = dec->read_tag_header(&type, &size, &time, tag_header)) != ERROR_SUCCESS) {
+>>>>>>> 2.0release
             if (!srs_is_client_gracefully_close(ret)) {
                 srs_error("flv: proxy tag header failed. ret=%d", ret);
             }
             return ret;
         }
 
+<<<<<<< HEAD
         char* data = new char[size];
         if ((ret = dec->read_tag_data(data, size)) != ERROR_SUCCESS) {
             srs_freepa(data);
+=======
+//            fwrite(tag_header, 1, 11, pf);
+//        flvWriter << tag_header;
+        std::vector<char> data(size);
+        if ((ret = dec->read_tag_data(&data[0], size)) != ERROR_SUCCESS) {
+>>>>>>> 2.0release
             if (!srs_is_client_gracefully_close(ret)) {
                 srs_error("flv: proxy tag data failed. ret=%d", ret);
             }
             return ret;
         }
+<<<<<<< HEAD
+=======
+ //           flvWriter << data;
+        if (static_cast<int>(type) == 9) {
+            ostringstream oss;
+            oss.str();
+            oss << "/tmp/264/" << count << ".264";
+
+            pf = std::fopen(oss.str().c_str(), "wb");
+            int offset = 1;
+            fwrite(&data[offset], 1, size - offset, pf);
+            std::fclose(pf);
+            count++;
+        }
+//            fwrite(&data[0], 1, size, pf);
+>>>>>>> 2.0release
 
         if ((ret = dec->read_previous_tag_size(pps)) != ERROR_SUCCESS) {
             if (!srs_is_client_gracefully_close(ret)) {
@@ -382,6 +424,11 @@ int SrsIngestSrsInput::do_proxy(ISrsHttpResponseReader* rr, SrsFlvDecoder* dec)
             }
             return ret;
         }
+<<<<<<< HEAD
+=======
+//            fwrite(pps, 1, 4, pf);
+//    flvWriter << pps;
+>>>>>>> 2.0release
     }
 
     return ret;
@@ -429,11 +476,14 @@ int SrsIngestSrsInput::connect()
 //        return ret;
 //    }
 
+<<<<<<< HEAD
 
     //
     //
     //
 
+=======
+>>>>>>> 2.0release
     srs_trace("flv: proxy uri: %s ", msg->uri().c_str());
     srs_trace("flv: proxy path: %s ", msg->uri().c_str());
 
@@ -455,6 +505,16 @@ int SrsIngestSrsInput::connect()
         return ret;
     }
 
+<<<<<<< HEAD
+=======
+//    flvWriter.open("out.flv");
+//    pf = std::fopen("/tmp/test.h264", "wb");
+//    if (!flvWriter.is_open() || pf == NULL)
+//    {
+//        return -1;
+//    }
+
+>>>>>>> 2.0release
     char header[9];
     if ((ret = dec.read_header(header)) != ERROR_SUCCESS) {
         if (!srs_is_client_gracefully_close(ret)) {
@@ -462,6 +522,12 @@ int SrsIngestSrsInput::connect()
         }
         return ret;
     }
+<<<<<<< HEAD
+=======
+
+//            fwrite(header, 1, 9, pf);
+//    flvWriter << header;
+>>>>>>> 2.0release
     srs_trace("flv: proxy drop flv header.");
 
     char pps[4];
@@ -472,7 +538,14 @@ int SrsIngestSrsInput::connect()
         return ret;
     }
 
+<<<<<<< HEAD
 //    ret = do_proxy(rr, &dec);
+=======
+//            fwrite(pps, 1, 4, pf);
+//    flvWriter << pps;
+
+    ret = do_proxy(rr, &dec);
+>>>>>>> 2.0release
 //    close();
 
 
