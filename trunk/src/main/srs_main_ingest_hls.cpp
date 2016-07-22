@@ -62,8 +62,8 @@ int proxy_hls2rtmp(std::string hls, std::string rtmp);
 // never subscribe handler in constructor,
 // instead, subscribe handler in initialize method.
 // kernel module.
-ISrsLog* _srs_log = new SrsFastLog();
-ISrsThreadContext* _srs_context = new ISrsThreadContext();
+//ISrsLog* _srs_log = new SrsFastLog();
+//ISrsThreadContext* _srs_context = new ISrsThreadContext();
 // app module.
 SrsConfig* _srs_config = NULL;
 SrsServer* _srs_server = NULL;
@@ -118,9 +118,12 @@ int main(int argc, char** argv)
 
     in_hls_url = "http://httpflv.fastweb.com.cn.cloudcdn.net/live_fw/mosaic";
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
             //    http://httpflv.fastweb.com.cn.cloudcdn.net/live_fw/agora
 >>>>>>> 2.0release
+=======
+>>>>>>> flv_2.0release
     out_rtmp_url = "mosaic.flv";
 
     
@@ -358,10 +361,13 @@ int SrsIngestSrsInput::do_proxy(ISrsHttpResponseReader* rr, SrsFlvDecoder* dec)
 
     char pps[4];
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 
     int count = 0;
 >>>>>>> 2.0release
+=======
+>>>>>>> flv_2.0release
     while (!rr->eof()) {
 
 //        if ((ret = connect()) != ERROR_SUCCESS) {
@@ -369,10 +375,14 @@ int SrsIngestSrsInput::do_proxy(ISrsHttpResponseReader* rr, SrsFlvDecoder* dec)
 //        }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> flv_2.0release
         char type;
         int32_t size;
         u_int32_t time;
         if ((ret = dec->read_tag_header(&type, &size, &time)) != ERROR_SUCCESS) {
+<<<<<<< HEAD
 =======
         char tag_header[11];
         char type;
@@ -380,12 +390,15 @@ int SrsIngestSrsInput::do_proxy(ISrsHttpResponseReader* rr, SrsFlvDecoder* dec)
         u_int32_t time;
         if ((ret = dec->read_tag_header(&type, &size, &time, tag_header)) != ERROR_SUCCESS) {
 >>>>>>> 2.0release
+=======
+>>>>>>> flv_2.0release
             if (!srs_is_client_gracefully_close(ret)) {
                 srs_error("flv: proxy tag header failed. ret=%d", ret);
             }
             return ret;
         }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
         char* data = new char[size];
         if ((ret = dec->read_tag_data(data, size)) != ERROR_SUCCESS) {
@@ -396,11 +409,17 @@ int SrsIngestSrsInput::do_proxy(ISrsHttpResponseReader* rr, SrsFlvDecoder* dec)
         std::vector<char> data(size);
         if ((ret = dec->read_tag_data(&data[0], size)) != ERROR_SUCCESS) {
 >>>>>>> 2.0release
+=======
+        char* data = new char[size];
+        if ((ret = dec->read_tag_data(data, size)) != ERROR_SUCCESS) {
+            srs_freepa(data);
+>>>>>>> flv_2.0release
             if (!srs_is_client_gracefully_close(ret)) {
                 srs_error("flv: proxy tag data failed. ret=%d", ret);
             }
             return ret;
         }
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
  //           flvWriter << data;
@@ -417,6 +436,8 @@ int SrsIngestSrsInput::do_proxy(ISrsHttpResponseReader* rr, SrsFlvDecoder* dec)
         }
 //            fwrite(&data[0], 1, size, pf);
 >>>>>>> 2.0release
+=======
+>>>>>>> flv_2.0release
 
         if ((ret = dec->read_previous_tag_size(pps)) != ERROR_SUCCESS) {
             if (!srs_is_client_gracefully_close(ret)) {
@@ -425,10 +446,13 @@ int SrsIngestSrsInput::do_proxy(ISrsHttpResponseReader* rr, SrsFlvDecoder* dec)
             return ret;
         }
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 //            fwrite(pps, 1, 4, pf);
 //    flvWriter << pps;
 >>>>>>> 2.0release
+=======
+>>>>>>> flv_2.0release
     }
 
     return ret;
@@ -477,13 +501,19 @@ int SrsIngestSrsInput::connect()
 //    }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> flv_2.0release
 
     //
     //
     //
 
+<<<<<<< HEAD
 =======
 >>>>>>> 2.0release
+=======
+>>>>>>> flv_2.0release
     srs_trace("flv: proxy uri: %s ", msg->uri().c_str());
     srs_trace("flv: proxy path: %s ", msg->uri().c_str());
 
@@ -506,6 +536,7 @@ int SrsIngestSrsInput::connect()
     }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 //    flvWriter.open("out.flv");
 //    pf = std::fopen("/tmp/test.h264", "wb");
@@ -515,6 +546,8 @@ int SrsIngestSrsInput::connect()
 //    }
 
 >>>>>>> 2.0release
+=======
+>>>>>>> flv_2.0release
     char header[9];
     if ((ret = dec.read_header(header)) != ERROR_SUCCESS) {
         if (!srs_is_client_gracefully_close(ret)) {
@@ -523,11 +556,14 @@ int SrsIngestSrsInput::connect()
         return ret;
     }
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 
 //            fwrite(header, 1, 9, pf);
 //    flvWriter << header;
 >>>>>>> 2.0release
+=======
+>>>>>>> flv_2.0release
     srs_trace("flv: proxy drop flv header.");
 
     char pps[4];
@@ -539,6 +575,7 @@ int SrsIngestSrsInput::connect()
     }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 //    ret = do_proxy(rr, &dec);
 =======
 //            fwrite(pps, 1, 4, pf);
@@ -546,6 +583,9 @@ int SrsIngestSrsInput::connect()
 
     ret = do_proxy(rr, &dec);
 >>>>>>> 2.0release
+=======
+//    ret = do_proxy(rr, &dec);
+>>>>>>> flv_2.0release
 //    close();
 
 

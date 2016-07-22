@@ -1,0 +1,30 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "F97C1C18FEBAE092C3D782F4B8C5A0053E3E82F2",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "F97C1C18FEBAE092C3D782F4B8C5A0053E3E82F2" : 0,
+    "607A30ED942EB53D4C61C0DFD2E859418333B2A2" : 0
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "FE839AE8-B2E5-41BB-8A2E-CD9A64C21642",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "F97C1C18FEBAE092C3D782F4B8C5A0053E3E82F2" : "srs\/",
+    "607A30ED942EB53D4C61C0DFD2E859418333B2A2" : ""
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "srs_xcode",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "trunk\/ide\/srs_xcode\/srs_xcode.xcodeproj",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/AgoraLab\/MediaRecording",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "607A30ED942EB53D4C61C0DFD2E859418333B2A2"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/winking324\/srs.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "F97C1C18FEBAE092C3D782F4B8C5A0053E3E82F2"
+    }
+  ]
+}
