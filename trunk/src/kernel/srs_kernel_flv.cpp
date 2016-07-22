@@ -741,7 +741,7 @@ int SrsFlvDecoder::read_header(char header[9])
     return ret;
 }
 
-int SrsFlvDecoder::read_tag_header(char* ptype, int32_t* pdata_size, u_int32_t* ptime)
+int SrsFlvDecoder::read_tag_header(char* ptype, int32_t* pdata_size, u_int32_t* ptime, char tag_header[11])
 {
     int ret = ERROR_SUCCESS;
 
@@ -758,6 +758,9 @@ int SrsFlvDecoder::read_tag_header(char* ptype, int32_t* pdata_size, u_int32_t* 
         }
         return ret;
     }
+
+//    tag_header = th;
+    memcpy(tag_header, th, 11);
     
     // Reserved UB [2]
     // Filter UB [1]

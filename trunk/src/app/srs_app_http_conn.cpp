@@ -362,11 +362,11 @@ int SrsHttpResponseReader::read(char* data, int nb_data, int* nb_read)
     
     
     // infinite chunked mode, directly read.
-    if (owner->is_infinite_chunked()) {
+//    if (owner->is_infinite_chunked()) {
         srs_assert(!owner->is_chunked() && owner->content_length() == -1);
         return read_specified(data, nb_data, nb_read);
-    }
-    
+//    }
+
     // infinite chunked mode, but user not set it,
     // we think there is no data left.
     is_eof = true;
@@ -967,11 +967,13 @@ int SrsHttpParser::parse_message_imp(SrsStSocket* skt)
             // SRS_HTTP_CRLFCRLF "\r\n\r\n" // 0x0D0A0D0A
             if (p[0] == SRS_CONSTS_CR && p[1] == SRS_CONSTS_LF && p[2] == SRS_CONSTS_CR && p[3] == SRS_CONSTS_LF) {
                 nparsed = http_parser_execute(&parser, &settings, buffer->bytes(), buffer->size());
-                srs_info("buffer=%d, nparsed=%d, header=%d", buffer->size(), (int)nparsed, header_parsed);
+                srs_trace("buffer=%d, nparsed=%d, header=%d", buffer->size(), (int)nparsed, header_parsed);
                 break;
             }
         }
-        
+        srs_trace("buffer size=%d", buffer->size());
+        srs_trace("buffer=%s", buffer);
+
         // consume the parsed bytes.
         if (nparsed && header_parsed) {
             buffer->read_slice(header_parsed);
