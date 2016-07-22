@@ -62,8 +62,8 @@ int proxy_hls2rtmp(std::string hls, std::string rtmp);
 // never subscribe handler in constructor,
 // instead, subscribe handler in initialize method.
 // kernel module.
-ISrsLog* _srs_log = new SrsFastLog();
-ISrsThreadContext* _srs_context = new ISrsThreadContext();
+//ISrsLog* _srs_log = new SrsFastLog();
+//ISrsThreadContext* _srs_context = new ISrsThreadContext();
 // app module.
 SrsConfig* _srs_config = NULL;
 SrsServer* _srs_server = NULL;
