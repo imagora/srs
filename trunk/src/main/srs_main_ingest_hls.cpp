@@ -426,14 +426,14 @@ void SrsIngestSrsInput::parse_video_data(char *data, int length, int count)
 void SrsIngestSrsInput::parse_audio_data(char *data, int length, int count)
 {
     uint8_t tag = data[0];
-    uint8_t type = tag&0xF0;
+    uint32_t type = (tag&0xF0) >> 4;
     
     if (type != SrsCodecAudioAAC) {
         srs_error("audio data is not aac");
         return;
     }
     
-    
+    std::fwrite(&data[1], 1, length - 1, pf);
 }
 
 int SrsIngestSrsInput::connect()
