@@ -45,7 +45,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 //#define SRS_AUTO_STREAM_CASTER 1
 
-//#include <srs_app_caster_flv.hpp>
 #include <srs_app_caster_flv.hpp>
 
 #include <stdlib.h>
@@ -70,8 +69,6 @@ ISrsThreadContext* _srs_context = new ISrsThreadContext();
 SrsConfig* _srs_config = NULL;
 SrsServer* _srs_server = NULL;
 
-#if defined(SRS_AUTO_HTTP_CORE)
-
 /**
 * main entrance.
 */
@@ -80,59 +77,10 @@ int main(int argc, char** argv)
     // TODO: support both little and big endian.
     srs_assert(srs_is_little_endian());
     
-    // directly failed when compile limited.
-#if !defined(SRS_AUTO_HTTP_CORE)
-    srs_error("depends on http-parser.");
-    exit(-1);
-#endif
-    
-#if defined(SRS_AUTO_GPERF_MP) || defined(SRS_AUTO_GPERF_MP) \
-|| defined(SRS_AUTO_GPERF_MC) || defined(SRS_AUTO_GPERF_MP)
-    srs_error("donot support gmc/gmp/gcp/gprof");
-    exit(-1);
-#endif
-    
-    srs_trace("srs_ingest_hls base on %s, to ingest hls live to srs", RTMP_SIG_SRS_SERVER);
-    
     // parse user options.
     std::string in_hls_url, out_rtmp_url;
-    for (int opt = 0; opt < argc; opt++) {
-        srs_trace("argv[%d]=%s", opt, argv[opt]);
-    }
-    
-    // fill the options for mac
-    for (int opt = 0; opt < argc - 1; opt++) {
-        // ignore all options except -i and -y.
-        char* p = argv[opt];
-        
-        // only accept -x
-        if (p[0] != '-' || p[1] == 0 || p[2] != 0) {
-            continue;
-        }
-        
-        // parse according the option name.
-        switch (p[1]) {
-            case 'i': in_hls_url = argv[opt + 1]; break;
-            case 'y': out_rtmp_url = argv[opt + 1]; break;
-            default: break;
-        }
-    }
-
     in_hls_url = "http://httpflv.fastweb.com.cn.cloudcdn.net/live_fw/mosaic";
     out_rtmp_url = "mosaic.flv";
-
-    
-    if (in_hls_url.empty() || out_rtmp_url.empty()) {
-        printf("ingest hls live stream and publish to RTMP server\n"
-               "Usage: %s <-i in_hls_url> <-y out_rtmp_url>\n"
-               "   in_hls_url      input hls url, ingest from this m3u8.\n"
-               "   out_rtmp_url    output rtmp url, publish to this url.\n"
-               "For example:\n"
-               "   %s -i http://127.0.0.1:8080/live/livestream.m3u8 -y rtmp://127.0.0.1/live/ingest_hls\n"
-               "   %s -i http://ossrs.net/live/livestream.m3u8 -y rtmp://127.0.0.1/live/ingest_hls\n",
-               argv[0], argv[0], argv[0]);
-        exit(-1);
-    }
     
     srs_trace("input:  %s", in_hls_url.c_str());
     srs_trace("output: %s", out_rtmp_url.c_str());
@@ -1041,16 +989,4 @@ int proxy_hls2rtmp(string hls, string rtmp)
     
     return ret;
 }
-
-#else
-
-int main(int argc, char** argv)
-{
-#ifndef SRS_AUTO_HTTP_CORE
-    srs_error("ingest requires http-api or http-server");
-#endif
-    return -1;
-}
-
-#endif
 
