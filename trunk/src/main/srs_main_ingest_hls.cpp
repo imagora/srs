@@ -57,7 +57,7 @@ using namespace std;
 #define SRS_HTTP_FLV_STREAM_BUFFER 4096
 
 // pre-declare
-int proxy_hls2rtmp(std::string hls, std::string rtmp);
+int proxy_hls2h264(std::string hls, std::string h264);
 
 // for the main objects(server, config, log, context),
 // never subscribe handler in constructor,
@@ -74,18 +74,15 @@ SrsServer* _srs_server = NULL;
 */
 int main(int argc, char** argv) 
 {
-    // TODO: support both little and big endian.
     srs_assert(srs_is_little_endian());
     
-    // parse user options.
-    std::string in_hls_url, out_rtmp_url;
-    in_hls_url = "http://httpflv.fastweb.com.cn.cloudcdn.net/live_fw/mosaic";
-    out_rtmp_url = "mosaic.flv";
+    std::string in_hls_url = "http://httpflv.fastweb.com.cn.cloudcdn.net/live_fw/mosaic";
+    std::string out_h264_file = "/tmp/test.flv";
     
     srs_trace("input:  %s", in_hls_url.c_str());
-    srs_trace("output: %s", out_rtmp_url.c_str());
+    srs_trace("output: %s", out_h264_file.c_str());
     
-    return proxy_hls2rtmp(in_hls_url, out_rtmp_url);
+    return proxy_hls2h264(in_hls_url, out_h264_file);
 }
 
 /**
@@ -232,24 +229,18 @@ private:
         
         int fetch(std::string m3u8);
     };
-private:
-    SrsHttpUri* in_hls;
-    std::vector<SrsTsPiece*> pieces;
-    int64_t next_connect_time;
-private:
-    SrsStream* stream;
-    SrsTsContext* context;
-
-    FILE *pf;
+    
 public:
-    SrsIngestSrsInput(SrsHttpUri* hls) {
+    SrsIngestSrsInput(SrsHttpUri* hls, const std::string &h264_file) {
         in_hls = hls;
         next_connect_time = 0;
         
         stream = new SrsStream();
         context = new SrsTsContext();
+        pf = std::fopen(h264_file.c_str(), "wb");
     }
-    virtual ~SrsIngestSrsInput() {
+    
+    ~SrsIngestSrsInput() {
         srs_freep(stream);
         srs_freep(context);
         
@@ -270,8 +261,6 @@ public:
     virtual int parse(ISrsTsHandler* ts, ISrsAacHandler* aac);
 
     int do_proxy(ISrsHttpResponseReader* rr, SrsFlvDecoder* dec);
-    
-    void parse_data(char *data, int length, int count);
 private:
     /**
      * parse the ts pieces body.
@@ -298,17 +287,30 @@ private:
      * remove all ts which is dirty.
      */
     virtual void remove_dirty();
+    
+    /**
+     * parse flv video data to h264 data
+     */
+    void parse_video_data(char *data, int length, int count);
+    
+    /**
+     * parse flv audio data to aac data
+     */
+    void parse_audio_data(char *data, int length, int count);
+    
+private:
+    SrsHttpUri* in_hls;
+    std::vector<SrsTsPiece*> pieces;
+    int64_t next_connect_time;
+    SrsStream* stream;
+    SrsTsContext* context;
+    
+    FILE *pf;
 };
-
-FILE *G = NULL;
 
 int SrsIngestSrsInput::do_proxy(ISrsHttpResponseReader* rr, SrsFlvDecoder* dec)
 {
     int ret = ERROR_SUCCESS;
-    
-    if (G == NULL) {
-        G = std::fopen("/tmp/test.mp3", "wb");
-    }
 
     char pps[4];
     int count = 0;
@@ -332,21 +334,10 @@ int SrsIngestSrsInput::do_proxy(ISrsHttpResponseReader* rr, SrsFlvDecoder* dec)
             return ret;
         }
 
-//        if (static_cast<int>(type) == 9) {
-//            ostringstream oss;
-//            oss.str();
-//            oss << "/tmp/264/" << count << ".264";
-//
-//            pf = std::fopen(oss.str().c_str(), "wb");
-//            fwrite(&data[0], 1, size, pf);
-//            std::fclose(pf);
-//            
-////            parse_data(&data[0], size, count);
-//            
-//            count++;
-//        } else
-        if (static_cast<int>(type) == 8) {
-            fwrite(&data[0], 1, size, G);
+        if (static_cast<int>(type) == 9) {
+            parse_video_data(&data[0], size, count);
+        } else if (static_cast<int>(type) == 8) {
+            parse_audio_data(&data[0], size, count);
         }
 
         if ((ret = dec->read_previous_tag_size(pps)) != ERROR_SUCCESS) {
@@ -361,12 +352,8 @@ int SrsIngestSrsInput::do_proxy(ISrsHttpResponseReader* rr, SrsFlvDecoder* dec)
 }
 
 
-void SrsIngestSrsInput::parse_data(char *data, int length, int count)
+void SrsIngestSrsInput::parse_video_data(char *data, int length, int count)
 {
-    if (G == NULL) {
-        G = std::fopen("/tmp/test.h264", "wb");
-    }
-    
     std::vector<char> raw_data;
     
     char *cursor = data;
@@ -433,7 +420,20 @@ void SrsIngestSrsInput::parse_data(char *data, int length, int count)
         std::copy(cursor, data + length, std::back_inserter(raw_data));
     }
     
-    std::fwrite(&raw_data[0], 1, raw_data.size(), G);
+    std::fwrite(&raw_data[0], 1, raw_data.size(), pf);
+}
+
+void SrsIngestSrsInput::parse_audio_data(char *data, int length, int count)
+{
+    uint8_t tag = data[0];
+    uint8_t type = tag&0xF0;
+    
+    if (type != SrsCodecAudioAAC) {
+        srs_error("audio data is not aac");
+        return;
+    }
+    
+    
 }
 
 int SrsIngestSrsInput::connect()
@@ -445,10 +445,6 @@ int SrsIngestSrsInput::connect()
         srs_trace("input hls wait for %dms", next_connect_time - now);
         st_usleep((next_connect_time - now) * 1000);
     }
-
-
-    // parse flv stream
-
 
     SrsHttpClient client;
     srs_trace("parse input hls %s", in_hls->get_url());
@@ -923,43 +919,32 @@ int SrsIngestSrsInput::SrsTsPiece::fetch(string m3u8)
 // the context for ingest hls stream.
 class SrsIngestSrsContext
 {
-private:
-    SrsIngestSrsInput* ic;
 public:
-    SrsIngestSrsContext(SrsHttpUri* hls, SrsHttpUri* rtmp) {
-        ic = new SrsIngestSrsInput(hls);
+    SrsIngestSrsContext(SrsHttpUri* hls, const std::string& h264) {
+        ic = new SrsIngestSrsInput(hls, h264);
     }
-    virtual ~SrsIngestSrsContext() {
+    
+    ~SrsIngestSrsContext() {
         srs_freep(ic);
     }
-    virtual int proxy() {
+    
+    int proxy() {
         int ret = ERROR_SUCCESS;
         
         if ((ret = ic->connect()) != ERROR_SUCCESS) {
             srs_error("connect ic failed. ret=%d", ret);
             return ret;
         }
-        
-//        if ((ret = oc->connect()) != ERROR_SUCCESS) {
-//            srs_error("connect ic failed. ret=%d", ret);
-//            return ret;
-//        }
-
-//        if ((ret = ic->parse(oc, oc)) != ERROR_SUCCESS) {
-//            srs_error("proxy ts to rtmp failed. ret=%d", ret);
-//            return ret;
-//        }
-
-//        if ((ret = oc->flush_message_queue()) != ERROR_SUCCESS) {
-//            srs_error("flush oc message failed. ret=%d", ret);
-//            return ret;
-//        }
 
         return ret;
     }
+
+private:
+    SrsIngestSrsInput* ic;
+
 };
 
-int proxy_hls2rtmp(string hls, string rtmp)
+int proxy_hls2h264(std::string hls, std::string h264)
 {
     int ret = ERROR_SUCCESS;
     
@@ -969,20 +954,16 @@ int proxy_hls2rtmp(string hls, string rtmp)
         return ret;
     }
     
-    SrsHttpUri hls_uri, rtmp_uri;
+    SrsHttpUri hls_uri;
     if ((ret = hls_uri.initialize(hls)) != ERROR_SUCCESS) {
         srs_error("hls uri invalid. ret=%d", ret);
         return ret;
     }
-//    if ((ret = rtmp_uri.initialize(rtmp)) != ERROR_SUCCESS) {
-//        srs_error("rtmp uri invalid. ret=%d", ret);
-//        return ret;
-//    }
 
-    SrsIngestSrsContext context(&hls_uri, &rtmp_uri);
+    SrsIngestSrsContext context(&hls_uri, h264);
     for (;;) {
         if ((ret = context.proxy()) != ERROR_SUCCESS) {
-            srs_error("proxy hls to rtmp failed. ret=%d", ret);
+            srs_error("proxy hls to h264 failed. ret=%d", ret);
             return ret;
         }
     }
