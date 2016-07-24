@@ -352,9 +352,15 @@ private:
     virtual void remove_dirty();
 };
 
+FILE *G = NULL;
+
 int SrsIngestSrsInput::do_proxy(ISrsHttpResponseReader* rr, SrsFlvDecoder* dec)
 {
     int ret = ERROR_SUCCESS;
+    
+    if (G == NULL) {
+        G = std::fopen("/tmp/test.mp3", "wb");
+    }
 
     char pps[4];
     int count = 0;
@@ -378,18 +384,21 @@ int SrsIngestSrsInput::do_proxy(ISrsHttpResponseReader* rr, SrsFlvDecoder* dec)
             return ret;
         }
 
-        if (static_cast<int>(type) == 9) {
-            ostringstream oss;
-            oss.str();
-            oss << "/tmp/264/" << count << ".264";
-
-            pf = std::fopen(oss.str().c_str(), "wb");
-            fwrite(&data[0], 1, size, pf);
-            std::fclose(pf);
-            
-            parse_data(&data[0], size, count);
-            
-            count++;
+//        if (static_cast<int>(type) == 9) {
+//            ostringstream oss;
+//            oss.str();
+//            oss << "/tmp/264/" << count << ".264";
+//
+//            pf = std::fopen(oss.str().c_str(), "wb");
+//            fwrite(&data[0], 1, size, pf);
+//            std::fclose(pf);
+//            
+////            parse_data(&data[0], size, count);
+//            
+//            count++;
+//        } else
+        if (static_cast<int>(type) == 8) {
+            fwrite(&data[0], 1, size, G);
         }
 
         if ((ret = dec->read_previous_tag_size(pps)) != ERROR_SUCCESS) {
@@ -402,8 +411,6 @@ int SrsIngestSrsInput::do_proxy(ISrsHttpResponseReader* rr, SrsFlvDecoder* dec)
 
     return ret;
 }
-
-FILE *G = NULL;
 
 
 void SrsIngestSrsInput::parse_data(char *data, int length, int count)
