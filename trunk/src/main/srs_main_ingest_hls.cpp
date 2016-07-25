@@ -76,7 +76,7 @@ int main(int argc, char** argv)
 {
     srs_assert(srs_is_little_endian());
     
-    std::string in_hls_url = "http://httpflv.fastweb.com.cn.cloudcdn.net/live_fw/mosaic";
+    std::string in_hls_url = "http://httpflv.fastweb.com.cn.cloudcdn.net/live_fw/test";
     std::string out_h264_file = "/tmp/test.flv";
     
     srs_trace("input:  %s", in_hls_url.c_str());
@@ -298,6 +298,11 @@ private:
      */
     void parse_audio_data(char *data, int length, int count);
     
+    /**
+     * generate adts header
+     */
+    void generate_adts_header(char packet[7], int16_t packetLength);
+    
 private:
     SrsHttpUri* in_hls;
     std::vector<SrsTsPiece*> pieces;
@@ -433,7 +438,33 @@ void SrsIngestSrsInput::parse_audio_data(char *data, int length, int count)
         return;
     }
     
-    std::fwrite(&data[1], 1, length - 1, pf);
+    char adts_header[7];
+    generate_adts_header(adts_header, length - 2);
+    std::vector<char> raw_data;
+    
+    std::copy(adts_header, adts_header + 7, std::back_inserter(raw_data));
+    std::copy(&data[2], data + length, std::back_inserter(raw_data));
+    std::fwrite(&raw_data[0], 1, raw_data.size(), pf);
+}
+
+void SrsIngestSrsInput::generate_adts_header(char packet[7], int16_t packetLength)
+{
+    const int adtsLength = 7;
+    // Variables Recycled by addADTStoPacket
+    int profile = 2;  //AAC LC
+    //39=MediaCodecInfo.CodecProfileLevel.AACObjectELD;
+    int freqIdx = 5;  //32KHz
+    int chanCfg = 1;  //MPEG-4 Audio Channel Configuration. 1 Channel front-center
+    //NSUInteger fullLength = adtsLength + packetLength;
+    unsigned long fullLength = adtsLength + packetLength;
+    // fill in ADTS data
+    packet[0] = (char)0xFF;	// 11111111  	= syncword
+    packet[1] = (char)0xF9;	// 1111 1 00 1  = syncword MPEG-2 Layer CRC
+    packet[2] = (char)(((profile-1)<<6) + (freqIdx<<2) +(chanCfg>>2));
+    packet[3] = (char)(((chanCfg&3)<<6) + (fullLength>>11));
+    packet[4] = (char)((fullLength&0x7FF) >> 3);
+    packet[5] = (char)(((fullLength&7)<<5) + 0x1F);
+    packet[6] = (char)0xFC;
 }
 
 int SrsIngestSrsInput::connect()
