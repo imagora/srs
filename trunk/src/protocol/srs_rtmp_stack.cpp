@@ -744,7 +744,8 @@ int SrsProtocol::do_decode_message(SrsMessageHeader& header, SrsStream* stream, 
                 return packet->decode(stream);
             } else if (request_name == RTMP_AMF0_COMMAND_RELEASE_STREAM
                 || request_name == RTMP_AMF0_COMMAND_FC_PUBLISH
-                || request_name == RTMP_AMF0_COMMAND_UNPUBLISH) {
+                || request_name == RTMP_AMF0_COMMAND_UNPUBLISH
+                || request_name == RTMP_AMF0_COMMAND_PUBLISH) {
                 srs_info("decode the AMF0/AMF3 response command(%s message).", request_name.c_str());
                 *ppacket = packet = new SrsFMLEStartResPacket(0);
                 return packet->decode(stream);
