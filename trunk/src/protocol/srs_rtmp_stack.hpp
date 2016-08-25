@@ -1321,6 +1321,7 @@ protected:
 public:
     static SrsFMLEStartPacket* create_release_stream(std::string stream);
     static SrsFMLEStartPacket* create_FC_publish(std::string stream);
+    static SrsFMLEStartPacket* create_publish(const std::string &stream);
 };
 /**
 * response for SrsFMLEStartPacket.

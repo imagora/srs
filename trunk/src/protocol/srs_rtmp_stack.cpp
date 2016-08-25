@@ -2279,11 +2279,21 @@ int SrsRtmpClient::fmle_publish(string stream, int& stream_id)
     }
     
     // FCPublish
+//    if (true) {
+//        SrsFMLEStartPacket* pkt = SrsFMLEStartPacket::create_FC_publish(stream);
+//        if ((ret = protocol->send_and_free_packet(pkt, 0)) != ERROR_SUCCESS) {
+//            srs_error("send FMLE publish "
+//                "FCPublish failed. stream=%s, ret=%d", stream.c_str(), ret);
+//            return ret;
+//        }
+//    }
+    
+    // publish
     if (true) {
-        SrsFMLEStartPacket* pkt = SrsFMLEStartPacket::create_FC_publish(stream);
+        SrsFMLEStartPacket* pkt = SrsFMLEStartPacket::create_publish(stream);
         if ((ret = protocol->send_and_free_packet(pkt, 0)) != ERROR_SUCCESS) {
             srs_error("send FMLE publish "
-                "FCPublish failed. stream=%s, ret=%d", stream.c_str(), ret);
+                      "publish failed. stream=%s, ret=%d", stream.c_str(), ret);
             return ret;
         }
     }
@@ -3910,6 +3920,17 @@ SrsFMLEStartPacket* SrsFMLEStartPacket::create_FC_publish(string stream)
     
     pkt->command_name = RTMP_AMF0_COMMAND_FC_PUBLISH;
     pkt->transaction_id = 3;
+    pkt->stream_name = stream;
+    
+    return pkt;
+}
+
+SrsFMLEStartPacket* SrsFMLEStartPacket::create_publish(const std::string &stream)
+{
+    SrsFMLEStartPacket* pkt = new SrsFMLEStartPacket();
+    
+    pkt->command_name = RTMP_AMF0_COMMAND_PUBLISH;
+    pkt->transaction_id = 0;
     pkt->stream_name = stream;
     
     return pkt;
