@@ -2282,14 +2282,14 @@ int SrsRtmpClient::fmle_publish(string stream, int& stream_id)
     }
     
     // FCPublish
-//    if (true) {
-//        SrsFMLEStartPacket* pkt = SrsFMLEStartPacket::create_FC_publish(stream);
-//        if ((ret = protocol->send_and_free_packet(pkt, 0)) != ERROR_SUCCESS) {
-//            srs_error("send FMLE publish "
-//                "FCPublish failed. stream=%s, ret=%d", stream.c_str(), ret);
-//            return ret;
-//        }
-//    }
+    if (true) {
+        SrsFMLEStartPacket* pkt = SrsFMLEStartPacket::create_FC_publish(stream);
+        if ((ret = protocol->send_and_free_packet(pkt, 0)) != ERROR_SUCCESS) {
+            srs_error("send FMLE publish "
+                "FCPublish failed. stream=%s, ret=%d", stream.c_str(), ret);
+            return ret;
+        }
+    }
     
     // CreateStream
     if (true) {
