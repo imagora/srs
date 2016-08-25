@@ -821,6 +821,8 @@ int SrsProtocol::do_decode_message(SrsMessageHeader& header, SrsStream* stream, 
             srs_info("decode the AMF0/AMF3 closeStream message.");
             *ppacket = packet = new SrsCloseStreamPacket();
             return packet->decode(stream);
+        } else if (command == RTMP_AMF0_COMMAND_KSY) {
+            return ERROR_SUCCESS;
         } else if (header.is_amf0_command() || header.is_amf3_command()) {
             srs_info("decode the AMF0/AMF3 call message.");
             *ppacket = packet = new SrsCallPacket();
@@ -2288,16 +2290,6 @@ int SrsRtmpClient::fmle_publish(string stream, int& stream_id)
 //            return ret;
 //        }
 //    }
-    
-    // publish
-    if (true) {
-        SrsFMLEStartPacket* pkt = SrsFMLEStartPacket::create_publish(stream);
-        if ((ret = protocol->send_and_free_packet(pkt, 0)) != ERROR_SUCCESS) {
-            srs_error("send FMLE publish "
-                      "publish failed. stream=%s, ret=%d", stream.c_str(), ret);
-            return ret;
-        }
-    }
     
     // CreateStream
     if (true) {
@@ -3921,17 +3913,6 @@ SrsFMLEStartPacket* SrsFMLEStartPacket::create_FC_publish(string stream)
     
     pkt->command_name = RTMP_AMF0_COMMAND_FC_PUBLISH;
     pkt->transaction_id = 3;
-    pkt->stream_name = stream;
-    
-    return pkt;
-}
-
-SrsFMLEStartPacket* SrsFMLEStartPacket::create_publish(const std::string &stream)
-{
-    SrsFMLEStartPacket* pkt = new SrsFMLEStartPacket();
-    
-    pkt->command_name = RTMP_AMF0_COMMAND_PUBLISH;
-    pkt->transaction_id = 0;
     pkt->stream_name = stream;
     
     return pkt;

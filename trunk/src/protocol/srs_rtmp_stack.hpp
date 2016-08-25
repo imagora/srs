@@ -76,20 +76,23 @@ class IMergeReadHandler;
 /**
  * amf0 command message, command name macros
  */
-#define RTMP_AMF0_COMMAND_CONNECT               "connect"
-#define RTMP_AMF0_COMMAND_CREATE_STREAM         "createStream"
-#define RTMP_AMF0_COMMAND_CLOSE_STREAM          "closeStream"
+#define RTMP_AMF0_COMMAND_CONNECT               "connect"               // 1
+#define RTMP_AMF0_COMMAND_CREATE_STREAM         "createStream"          // 2
+#define RTMP_AMF0_COMMAND_CLOSE_STREAM          "closeStream"           // 0
 #define RTMP_AMF0_COMMAND_PLAY                  "play"
 #define RTMP_AMF0_COMMAND_PAUSE                 "pause"
 #define RTMP_AMF0_COMMAND_ON_BW_DONE            "onBWDone"
 #define RTMP_AMF0_COMMAND_ON_STATUS             "onStatus"
 #define RTMP_AMF0_COMMAND_RESULT                "_result"
 #define RTMP_AMF0_COMMAND_ERROR                 "_error"
-#define RTMP_AMF0_COMMAND_RELEASE_STREAM        "releaseStream"
-#define RTMP_AMF0_COMMAND_FC_PUBLISH            "FCPublish"
+#define RTMP_AMF0_COMMAND_RELEASE_STREAM        "releaseStream"         // 0
+#define RTMP_AMF0_COMMAND_FC_PUBLISH            "FCPublish"             // 3
 #define RTMP_AMF0_COMMAND_UNPUBLISH             "FCUnpublish"
-#define RTMP_AMF0_COMMAND_PUBLISH               "publish"
+#define RTMP_AMF0_COMMAND_PUBLISH               "publish"               // 0
 #define RTMP_AMF0_DATA_SAMPLE_ACCESS            "|RtmpSampleAccess"
+
+// Ksyun com.
+#define RTMP_AMF0_COMMAND_KSY                   "ksy_live_server"
 
 /**
  * the signature for packets to client.
@@ -1321,7 +1324,6 @@ protected:
 public:
     static SrsFMLEStartPacket* create_release_stream(std::string stream);
     static SrsFMLEStartPacket* create_FC_publish(std::string stream);
-    static SrsFMLEStartPacket* create_publish(const std::string &stream);
 };
 /**
 * response for SrsFMLEStartPacket.
