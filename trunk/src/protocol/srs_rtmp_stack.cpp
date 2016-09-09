@@ -2328,6 +2328,19 @@ int SrsRtmpClient::fmle_publish(string stream, int& stream_id)
         }
     }
     
+    // expect result(start) of publish
+    if (true) {
+        SrsCommonMessage* msg = NULL;
+        SrsOnStatusCallPacket* pkt = NULL;
+        if ((ret = expect_message(&msg, &pkt)) != ERROR_SUCCESS) {
+            srs_error("expect publish response message(NetStream.Publish.Start) failed. ret=%d", ret);
+            return ret;
+        }
+        SrsAutoFree(SrsCommonMessage, msg);
+        SrsAutoFree(SrsOnStatusCallPacket, pkt);
+        srs_info("get publish response message");
+    }
+    
     return ret;
 }
 
