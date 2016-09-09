@@ -1747,6 +1747,43 @@ protected:
     virtual int encode_packet(SrsStream* stream);
 };
 
+class SrsOnStatusResPacket : public SrsPacket
+{
+public:
+    /**
+     * Name of command. Set to "onStatus"
+     */
+    std::string command_name;
+    /**
+     * Transaction ID set to 0.
+     */
+    double transaction_id;
+    /**
+     * Command information does not exist. Set to null type.
+     * @remark, never be NULL, an AMF0 null instance.
+     */
+    SrsAmf0Any* args; // null
+    /**
+     * Name-value pairs that describe the response from the server.
+     * 'code','level', 'description' are names of few among such information.
+     * @remark, never be NULL, an AMF0 object instance.
+     */
+    SrsAmf0Object* data;
+public:
+    SrsOnStatusResPacket();
+    virtual ~SrsOnStatusResPacket();
+// decode functions for concrete packet to override.
+public:
+    virtual int decode(SrsStream* stream);
+// encode functions for concrete packet to override.
+public:
+    virtual int get_prefer_cid();
+    virtual int get_message_type();
+protected:
+    virtual int get_size();
+    virtual int encode_packet(SrsStream* stream);
+};
+
 /**
 * AMF0Data RtmpSampleAccess
 * @remark, user must set the stream_id by SrsCommonMessage.set_packet().

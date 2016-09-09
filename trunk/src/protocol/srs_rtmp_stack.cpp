@@ -781,6 +781,10 @@ int SrsProtocol::do_decode_message(SrsMessageHeader& header, SrsStream* stream, 
             srs_info("decode the AMF0/AMF3 command(pause message).");
             *ppacket = packet = new SrsPausePacket();
             return packet->decode(stream);
+        } else if (command == RTMP_AMF0_COMMAND_ON_STATUS) {
+            srs_info("decode the AMF0/AMF3 command(onStatus).");
+            *ppacket = packet = new SrsOnStatusResPacket();
+            return packet->decode(stream);
         } else if(command == RTMP_AMF0_COMMAND_RELEASE_STREAM) {
             srs_info("decode the AMF0/AMF3 command(FMLE releaseStream message).");
             *ppacket = packet = new SrsFMLEStartPacket();
@@ -2331,13 +2335,13 @@ int SrsRtmpClient::fmle_publish(string stream, int& stream_id)
     // expect result(start) of publish
     if (true) {
         SrsCommonMessage* msg = NULL;
-        SrsOnStatusCallPacket* pkt = NULL;
-        if ((ret = expect_message(&msg, &pkt)) != ERROR_SUCCESS) {
+        SrsOnStatusResPacket* pkt = NULL;
+        if ((ret = expect_message<SrsOnStatusResPacket>(&msg, &pkt)) != ERROR_SUCCESS) {
             srs_error("expect publish response message(NetStream.Publish.Start) failed. ret=%d", ret);
             return ret;
         }
         SrsAutoFree(SrsCommonMessage, msg);
-        SrsAutoFree(SrsOnStatusCallPacket, pkt);
+        SrsAutoFree(SrsOnStatusResPacket, pkt);
         srs_info("get publish response message");
     }
     
@@ -4796,6 +4800,85 @@ int SrsOnStatusDataPacket::get_size()
 }
 
 int SrsOnStatusDataPacket::encode_packet(SrsStream* stream)
+{
+    int ret = ERROR_SUCCESS;
+    
+    if ((ret = srs_amf0_write_string(stream, command_name)) != ERROR_SUCCESS) {
+        srs_error("encode command_name failed. ret=%d", ret);
+        return ret;
+    }
+    srs_verbose("encode command_name success.");
+    
+    if ((ret = data->write(stream)) != ERROR_SUCCESS) {
+        srs_error("encode data failed. ret=%d", ret);
+        return ret;
+    }
+    srs_verbose("encode data success.");
+    
+    srs_info("encode onStatus(Data) packet success.");
+    
+    return ret;
+}
+
+SrsOnStatusResPacket::SrsOnStatusResPacket()
+{
+    command_name = RTMP_AMF0_COMMAND_ON_STATUS;
+    data = SrsAmf0Any::object();
+}
+
+SrsOnStatusResPacket::~SrsOnStatusResPacket()
+{
+    srs_freep(data);
+}
+
+int SrsOnStatusResPacket::decode(SrsStream *stream)
+{
+    int ret = ERROR_SUCCESS;
+    
+    if ((ret = srs_amf0_read_string(stream, command_name)) != ERROR_SUCCESS) {
+        srs_error("amf0 decode onStatus command_name failed. ret=%d", ret);
+        return ret;
+    }
+    if (command_name.empty() || command_name != RTMP_AMF0_COMMAND_ON_STATUS) {
+        ret = ERROR_RTMP_AMF0_DECODE;
+        srs_error("amf0 decode onStatus command_name failed. "
+                  "command_name=%s, ret=%d", command_name.c_str(), ret);
+        return ret;
+    }
+    
+    if ((ret = srs_amf0_read_number(stream, transaction_id)) != ERROR_SUCCESS) {
+        srs_error("amf0 decode onStatus transaction_id failed. ret=%d", ret);
+        return ret;
+    }
+    
+    if ((ret = srs_amf0_read_null(stream)) != ERROR_SUCCESS) {
+        srs_error("amf0 decode onStatus command_object failed. ret=%d", ret);
+        return ret;
+    }
+    
+    // object not decode
+    
+    srs_info("amf0 decode onStatus response packet success");
+    
+    return ret;
+}
+
+int SrsOnStatusResPacket::get_prefer_cid()
+{
+    return RTMP_CID_OverStream;
+}
+
+int SrsOnStatusResPacket::get_message_type()
+{
+    return RTMP_MSG_AMF0CommandMessage;
+}
+
+int SrsOnStatusResPacket::get_size()
+{
+    return SrsAmf0Size::str(command_name) + SrsAmf0Size::object(data);
+}
+
+int SrsOnStatusResPacket::encode_packet(SrsStream* stream)
 {
     int ret = ERROR_SUCCESS;
     
