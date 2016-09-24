@@ -80,6 +80,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         int64_t send_timeout;
         int64_t recv_bytes;
         int64_t send_bytes;
+        int64_t last_send_time; // ms
         
         SrsBlockSyncSocket() {
             send_timeout = recv_timeout = ST_UTIME_NO_TIMEOUT;
@@ -194,8 +195,12 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     {
         SrsBlockSyncSocket* skt = (SrsBlockSyncSocket*)ctx;
         
-        int ret = ERROR_SUCCESS;
+        srs_update_system_time_ms();
+        if (srs_get_system_time_ms() - skt->last_send_time > skt->send_timeout / 1000) {
+            return ERROR_SOCKET_WRITE;
+        }
         
+        int ret = ERROR_SUCCESS;
         ssize_t nb_write = ::writev(skt->fd, iov, iov_size);
         
         if (nwrite) {
@@ -215,6 +220,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         }
         
         skt->send_bytes += nb_write;
+        skt->last_send_time = srs_get_system_time_ms();
         
         return ret;
     }

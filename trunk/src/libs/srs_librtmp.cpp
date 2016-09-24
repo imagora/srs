@@ -493,6 +493,9 @@ int srs_librtmp_context_resolve_host(Context* context)
         return ret;
     }
     
+    context->skt->set_send_timeout(5 * 1000 * 1000);
+    context->skt->set_recv_timeout(5 * 1000 * 1000);
+    
     // connect to server:port
     context->ip = srs_dns_resolve(context->host);
     if (context->ip.empty()) {
