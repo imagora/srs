@@ -196,7 +196,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         SrsBlockSyncSocket* skt = (SrsBlockSyncSocket*)ctx;
         
         srs_update_system_time_ms();
-        if (srs_get_system_time_ms() - skt->last_send_time > skt->send_timeout / 1000) {
+        if (skt->last_send_time != 0 && srs_get_system_time_ms() - skt->last_send_time > skt->send_timeout / 1000) {
+            skt->last_send_time = 0;
             return ERROR_SOCKET_WRITE;
         }
         
