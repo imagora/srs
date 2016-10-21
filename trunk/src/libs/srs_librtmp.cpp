@@ -1270,7 +1270,7 @@ int srs_write_h264_ipb_frame(Context* context,
     
     std::string sei_ibp;
     if (context->h264_sei_changed) {
-        if ((ret = context->avc_raw.mux_sei_ipb_frame(context->h264_sei.c_str(), context->h264_sei.size(), sei)) != ERROR_SUCCESS) {
+        if ((ret = context->avc_raw.mux_sei_ipb_frame(context->h264_sei.c_str(), context->h264_sei.size(), sei_ibp)) != ERROR_SUCCESS) {
             srs_warn("mux sei frame failed");
         }
         context->h264_sei_changed = false;
