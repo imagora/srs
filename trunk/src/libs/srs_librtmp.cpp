@@ -1383,7 +1383,7 @@ int srs_write_h264_raw_frame(Context* context,
         std::string frame_buf("momoa9a427d1argo");
         short s = htons(frame_size);
         frame_buf.append((char *)&s, 2);
-        frame_buf.insert(frame_buf.end(), frame, frame_size);
+        frame_buf.insert(frame_buf.size(), frame, frame_size);
         
         std::string sei;
         if ((ret = context->avc_raw.sei_demux(&frame_buf[0], frame_buf.size(), sei)) != ERROR_SUCCESS) {
