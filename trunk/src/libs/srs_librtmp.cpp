@@ -1361,6 +1361,7 @@ int srs_write_h264_raw_frame(Context* context,
     
     // ignore SEI message
     if (context->avc_raw.is_sei(frame, frame_size)) {
+        srs_warn("Not send SEI data, frame size %d", frame_size);
         return ret;
     }
         
