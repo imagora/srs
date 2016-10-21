@@ -254,7 +254,7 @@ int SrsRawH264Stream::mux_sequence_header(const std::string &sps, const std::str
     return ret;
 }
 
-int SrsRawH264Stream::mux_sei_ipb_frame(char* frame, int nb_frame, string& sei_or_ibp)
+int SrsRawH264Stream::mux_sei_ipb_frame(const char* frame, int nb_frame, string& sei_or_ibp)
 {
     int ret = ERROR_SUCCESS;
     
