@@ -49,6 +49,7 @@ using namespace std;
 #include <srs_lib_bandwidth.hpp>
 #include <srs_raw_avc.hpp>
 #include <srs_lib_log.hpp>
+#include <netinet/in.h>
 
 // kernel module.
 ISrsLog* _srs_log = new SrsSysLog();
