@@ -283,8 +283,8 @@ int SrsRawH264Stream::mux_sei_ipb_frame(char* frame, int nb_frame, string& sei_o
     // NALUnit
     stream.write_bytes(frame, nb_frame);
 
-    ibp = "";
-    ibp.append(packet, nb_packet);
+    sei_or_ibp = "";
+    sei_or_ibp.append(packet, nb_packet);
 
     return ret;
 }
