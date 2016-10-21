@@ -1271,7 +1271,7 @@ int srs_write_h264_ipb_frame(Context* context,
     
     std::string sei_ibp;
     if (context->h264_sei_changed) {
-        srs_warn("SEI info: %s", context->h264_sei.c_str());
+        srs_warn("SEI info: %s %u", context->h264_sei.c_str(), context->h264_sei.size());
         if ((ret = context->avc_raw.mux_sei_ipb_frame(context->h264_sei.c_str(), context->h264_sei.size(), sei_ibp)) != ERROR_SUCCESS) {
             srs_warn("mux sei frame failed");
         }
@@ -1380,10 +1380,13 @@ int srs_write_h264_raw_frame(Context* context,
         if (!isIFrame) {
             return ret;
         }
-        std::string frame_buf("momoa9a427d1argo");
+        
+        std::string frame_buf;
+        frame_buf.append(frame, 2);
+        frame_buf.append("momoa9a427d1argo");
         short s = htons(frame_size);
         frame_buf.append((char *)&s, 2);
-        frame_buf.insert(frame_buf.size(), frame, frame_size);
+        frame_buf.insert(frame_buf.size(), frame + 2, frame_size - 2);
         
         std::string sei;
         if ((ret = context->avc_raw.sei_demux(&frame_buf[0], frame_buf.size(), sei)) != ERROR_SUCCESS) {
