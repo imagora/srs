@@ -153,7 +153,7 @@ public:
     /**
     * write bytes to stream
     */
-    virtual void write_bytes(char* data, int size);
+    virtual void write_bytes(const char* data, int size);
 };
 
 /**

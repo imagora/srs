@@ -244,7 +244,7 @@ void SrsStream::write_string(string value)
     p += value.length();
 }
 
-void SrsStream::write_bytes(char* data, int size)
+void SrsStream::write_bytes(const char* data, int size)
 {
     srs_assert(require(size));
     
