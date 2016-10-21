@@ -1270,7 +1270,6 @@ int srs_write_h264_ipb_frame(Context* context,
     
     std::string sei_ibp;
     if (context->h264_sei_changed) {
-        srs_warn("SEI info: %s", context->h264_sei.c_str());
         if ((ret = context->avc_raw.mux_sei_ipb_frame(context->h264_sei.c_str(), context->h264_sei.size(), sei_ibp)) != ERROR_SUCCESS) {
             srs_warn("mux sei frame failed");
         }
@@ -1390,13 +1389,8 @@ int srs_write_h264_raw_frame(Context* context,
         //     return ERROR_H264_DUPLICATED_SEI;
         // }
         
-        std::string sei_send("momoa9a427d1argo");
-        short s = htons(sei.size());
-        sei_send.append((char *)&s, 2);
-        sei_send.insert(sei_send.end(), sei.begin(), sei.end());
-        
         context->h264_sei_changed = true;
-        context->h264_sei = sei_send;
+        context->h264_sei = sei;
         
         return ret;
     }
