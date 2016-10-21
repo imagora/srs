@@ -1386,7 +1386,7 @@ int srs_write_h264_raw_frame(Context* context,
         frame_buf.insert(frame_buf.end(), frame, frame_size);
         
         std::string sei;
-        if ((ret = context->avc_raw.sei_demux(&frame_buf[0], frame_buf.size(), sei)) != ERROR_SUCCESS) {
+        if ((ret = context->avc_raw.sei_demux(frame_buf.c_str(), frame_buf.size(), sei)) != ERROR_SUCCESS) {
             return ret;
         }
         
