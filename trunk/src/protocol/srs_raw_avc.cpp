@@ -150,7 +150,23 @@ int SrsRawH264Stream::pps_demux(char* frame, int nb_frame, string& pps)
     return ret;
 }
 
-int SrsRawH264Stream::mux_sequence_header(string sps, string pps, u_int32_t dts, u_int32_t pts, string& sh)
+int SrsRawH264Stream::sei_demux(char *frame, int nb_frame, std::string &sei)
+{
+    int ret = ERROR_SUCCESS;
+    sei = "";
+    if (nb_frame > 0) {
+        sei.append(frame, nb_frame);
+    }
+    
+    // should never be empty.
+    if (sei.empty()) {
+        return ERROR_STREAM_CASTER_AVC_SEI;
+    }
+    
+    return ret;
+}
+
+int SrsRawH264Stream::mux_sequence_header(const std::string &sps, const std::string &pps, u_int32_t dts, u_int32_t pts, std::string& sh)
 {
     int ret = ERROR_SUCCESS;
 
@@ -238,7 +254,7 @@ int SrsRawH264Stream::mux_sequence_header(string sps, string pps, u_int32_t dts,
     return ret;
 }
 
-int SrsRawH264Stream::mux_ipb_frame(char* frame, int nb_frame, string& ibp)
+int SrsRawH264Stream::mux_sei_ipb_frame(char* frame, int nb_frame, string& sei_or_ibp)
 {
     int ret = ERROR_SUCCESS;
     

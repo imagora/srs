@@ -478,7 +478,7 @@ int SrsMpegtsOverUdp::write_h264_ipb_frame(char* frame, int frame_size, u_int32_
     }
 
     std::string ibp;
-    if ((ret = avc->mux_ipb_frame(frame, frame_size, ibp)) != ERROR_SUCCESS) {
+    if ((ret = avc->mux_sei_ipb_frame(frame, frame_size, ibp)) != ERROR_SUCCESS) {
         return ret;
     }
     

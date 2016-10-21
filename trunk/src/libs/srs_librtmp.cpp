@@ -92,6 +92,7 @@ struct Context
     // about SPS, @see: 7.3.2.1.1, H.264-AVC-ISO_IEC_14496-10-2012.pdf, page 62
     std::string h264_sps;
     std::string h264_pps;
+    std::string h264_sei;
     // whether the sps and pps sent,
     // @see https://github.com/ossrs/srs/issues/203
     bool h264_sps_pps_sent;
@@ -99,6 +100,7 @@ struct Context
     // @see https://github.com/ossrs/srs/issues/204
     bool h264_sps_changed;
     bool h264_pps_changed;
+    bool h264_sei_changed;
     // for aac raw stream,
     // @see: https://github.com/ossrs/srs/issues/212#issuecomment-64146250
     SrsStream aac_raw_stream;
@@ -113,6 +115,7 @@ struct Context
         h264_sps_pps_sent = false;
         h264_sps_changed = false;
         h264_pps_changed = false;
+        h264_sei_changed = false;
     }
     virtual ~Context() {
         srs_freep(req);
@@ -1265,15 +1268,26 @@ int srs_write_h264_ipb_frame(Context* context,
         frame_type = SrsCodecVideoAVCFrameKeyFrame;
     }
     
+    std::string sei_ibp;
+    if (context->h264_sei_changed) {
+        if ((ret = context->avc_raw.mux_sei_ipb_frame(context->h264_sei.c_str(), context->h264_sei.size(), sei)) != ERROR_SUCCESS) {
+            srs_warn("mux sei frame failed");
+        }
+        context->h264_sei_changed = false;
+    }
+    
     std::string ibp;
-    if ((ret = context->avc_raw.mux_ipb_frame(frame, frame_size, ibp)) != ERROR_SUCCESS) {
+    if ((ret = context->avc_raw.mux_sei_ipb_frame(frame, frame_size, ibp)) != ERROR_SUCCESS) {
         return ret;
     }
+    
+    // merge sei and ibp
+    sei_ibp.insert(sei_ibp.end(), ibp.begin(), ibp.end());
     
     int8_t avc_packet_type = SrsCodecVideoAVCTypeNALU;
     char* flv = NULL;
     int nb_flv = 0;
-    if ((ret = context->avc_raw.mux_avc2flv(ibp, frame_type, avc_packet_type, dts, pts, &flv, &nb_flv)) != ERROR_SUCCESS) {
+    if ((ret = context->avc_raw.mux_avc2flv(sei_ibp, frame_type, avc_packet_type, dts, pts, &flv, &nb_flv)) != ERROR_SUCCESS) {
         return ret;
     }
     
@@ -1322,8 +1336,8 @@ int srs_write_h264_sps_pps(Context* context, u_int32_t dts, u_int32_t pts)
 /**
 * write h264 raw frame, maybe sps/pps/IPB-frame.
 */
-int srs_write_h264_raw_frame(Context* context, 
-    char* frame, int frame_size, u_int32_t dts, u_int32_t pts
+int srs_write_h264_raw_frame(Context* context,
+    char* frame, int frame_size, u_int32_t dts, u_int32_t pts, bool isIFrame
 ) {
     int ret = ERROR_SUCCESS;
 
@@ -1361,7 +1375,23 @@ int srs_write_h264_raw_frame(Context* context,
     
     // ignore SEI message
     if (context->avc_raw.is_sei(frame, frame_size)) {
-        srs_warn("Not send SEI data, frame size %d", frame_size);
+        if (!isIFrame) {
+            return ret;
+        }
+        
+        std::string sei;
+        if ((ret = context->avc_raw.sei_demux(frame, frame_size, sei)) != ERROR_SUCCESS) {
+            return ret;
+        }
+        
+        // TODO: duplicated send?
+        // if (context->h264_sei == sei) {
+        //     return ERROR_H264_DUPLICATED_SEI;
+        // }
+        
+        context->h264_sei_changed = true;
+        context->h264_sei = sei;
+        
         return ret;
     }
         
@@ -1396,6 +1426,7 @@ int srs_h264_write_raw_frames(srs_rtmp_t rtmp,
     // @see https://github.com/ossrs/srs/issues/203
     // @see https://github.com/ossrs/srs/issues/204
     int error_code_return = ret;
+    bool isIFrame = false;
     
     // send each frame.
     while (!context->h264_raw_stream.empty()) {
@@ -1410,9 +1441,13 @@ int srs_h264_write_raw_frames(srs_rtmp_t rtmp,
         if (frame_size <= 0) {
             continue;
         }
+        
+        if (context->avc_raw.is_sps(frame, frame_size)) {
+            isIFrame = true;
+        }
 
         // it may be return error, but we must process all packets.
-        if ((ret = srs_write_h264_raw_frame(context, frame, frame_size, dts, pts)) != ERROR_SUCCESS) {
+        if ((ret = srs_write_h264_raw_frame(context, frame, frame_size, dts, pts, isIFrame)) != ERROR_SUCCESS) {
             error_code_return = ret;
             
             // ignore known error, process all packets.

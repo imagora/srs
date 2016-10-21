@@ -1020,7 +1020,7 @@ int SrsIngestSrsOutput::on_ts_video(SrsTsMessage* msg, SrsStream* avs)
         
         // ibp frame.
         std::string ibp;
-        if ((ret = avc->mux_ipb_frame(frame, frame_size, ibp)) != ERROR_SUCCESS) {
+        if ((ret = avc->mux_sei_ipb_frame(frame, frame_size, ibp)) != ERROR_SUCCESS) {
             return ret;
         }
         ibps.append(ibp);

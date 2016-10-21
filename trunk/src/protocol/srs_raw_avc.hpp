@@ -59,25 +59,26 @@ public:
     virtual bool is_sps(char* frame, int nb_frame);
     virtual bool is_pps(char* frame, int nb_frame);
     /**
-    * demux the sps or pps to string.
-    * @param sps/pps output the sps/pps.
+    * demux the sps or pps or sei to string.
+    * @param sps/pps/sei output the sps/pps/sei.
     */
     virtual int sps_demux(char* frame, int nb_frame, std::string& sps);
     virtual int pps_demux(char* frame, int nb_frame, std::string& pps);
+    virtual int sei_demux(char* frame, int nb_frame, std::string& sei);
 public:
     /**
     * h264 raw data to h264 packet, without flv payload header.
     * mux the sps/pps to flv sequence header packet.
     * @param sh output the sequence header.
     */
-    virtual int mux_sequence_header(std::string sps, std::string pps, u_int32_t dts, u_int32_t pts, std::string& sh);
+    virtual int mux_sequence_header(const std::string &sps, const std::string &pps, u_int32_t dts, u_int32_t pts, std::string& sh);
     /**
     * h264 raw data to h264 packet, without flv payload header.
     * mux the ibp to flv ibp packet.
     * @param ibp output the packet.
     * @param frame_type output the frame type.
     */
-    virtual int mux_ipb_frame(char* frame, int nb_frame, std::string& ibp);
+    virtual int mux_sei_ipb_frame(char* frame, int nb_frame, std::string& sei_or_ibp);
     /**
     * mux the avc video packet to flv video packet.
     * @param frame_type, SrsCodecVideoAVCFrameKeyFrame or SrsCodecVideoAVCFrameInterFrame.
