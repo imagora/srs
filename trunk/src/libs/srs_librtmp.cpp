@@ -1380,13 +1380,9 @@ int srs_write_h264_raw_frame(Context* context,
         if (!isIFrame) {
             return ret;
         }
-        std::string frame_buf("momoa9a427d1argo");
-        short s = htons(frame_size);
-        frame_buf.append((char *)&s, 2);
-        frame_buf.insert(frame_buf.end(), frame, frame_size);
         
         std::string sei;
-        if ((ret = context->avc_raw.sei_demux(frame_buf.c_str(), frame_buf.size(), sei)) != ERROR_SUCCESS) {
+        if ((ret = context->avc_raw.sei_demux(frame, frame_size, sei)) != ERROR_SUCCESS) {
             return ret;
         }
         
@@ -1395,8 +1391,13 @@ int srs_write_h264_raw_frame(Context* context,
         //     return ERROR_H264_DUPLICATED_SEI;
         // }
         
+        std::string sei_send("momoa9a427d1argo");
+        short s = htons(sei.size());
+        sei_send.append((char *)&s, 2);
+        sei_send.insert(sei_send.end(), sei.begin(), sei.end());
+        
         context->h264_sei_changed = true;
-        context->h264_sei = sei;
+        context->h264_sei = sei_send;
         
         return ret;
     }
