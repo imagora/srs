@@ -2350,8 +2350,8 @@ int SrsRtmpClient::fmle_publish(string stream, int& stream_id)
     uint32_t height = 640;
     if (true && width != 0 && height != 0) {
         SrsOnMetaDataPacket* pkt = new SrsOnMetaDataPacket();
-        pkt->metadata.set("width", width);
-        pkt->metadata.set("height", height);
+        pkt->metadata->set("width", width);
+        pkt->metadata->set("height", height);
         if ((ret = protocol->send_and_free_packet(pkt, stream_id)) != ERROR_SUCCESS) {
             srs_error("send onMetaData failed. stream=%s, stream_id=%d, width=%u, height=%u, ret=%d", stream.c_str(), stream_id, width, height, ret);
             return ret;
