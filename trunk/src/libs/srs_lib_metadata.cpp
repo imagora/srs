@@ -23,15 +23,27 @@ enum ProfileIDC
 
 
 SpsParser::SpsParser(const uint8_t *frame, int nb_frame)
-    : m_frame(frame), m_nb_frame(nb_frame), m_parse_pos(0)
 {
+    m_frame = new uint8_t[nb_frame];
+    memcpy(m_frame, frame + 1, nb_frame - 1);
+    m_nb_frame = nb_frame - 1;
+    m_parse_pos = 0;
     
+    srs_info("SPS Data: %02x%02x %02x%02x %02x%02x %02x%02x %02x%02x",
+             m_frame[0], m_frame[1], m_frame[2], m_frame[3], m_frame[4],
+             m_frame[5], m_frame[6], m_frame[7], m_frame[8], m_frame[9]);
+    
+    EBSPtoRBSP();
+    
+    srs_info("SPS Data: %02x%02x %02x%02x %02x%02x %02x%02x %02x%02x",
+             m_frame[0], m_frame[1], m_frame[2], m_frame[3], m_frame[4],
+             m_frame[5], m_frame[6], m_frame[7], m_frame[8], m_frame[9]);
 }
 
 
 SpsParser::~SpsParser()
 {
-    
+    delete []m_frame;
 }
 
 
@@ -151,6 +163,7 @@ int SpsParser::ParseSps(MetaData &metadata)
     
     metadata.width = ((pic_width_in_mbs_minus1 + 1) * 16) - frame_crop_bottom_offset * 2 - frame_crop_top_offset * 2;
     metadata.height = ((2 - frame_mbs_only_flag) * (pic_height_in_map_units_minus1 + 1) * 16) - (frame_crop_right_offset * 2) - (frame_crop_left_offset * 2);
+    srs_error("SPS Data: %u %u", metadata.width, metadata.height);
     return ERROR_SUCCESS;
 }
 
@@ -199,5 +212,42 @@ uint32_t SpsParser::ReadSE()
 
     return r;
 }
+
+
+int SpsParser::EBSPtoRBSP()
+{
+    int count = 0;
+    int j = 0;
+    for (int i = 0; i < m_nb_frame; ++i)
+    {
+        if ((count == 2) && (m_frame[i] < 0x03))
+            return ERROR_H264_SPS_EBSP_ERROR;
+        
+        if ((count == 2) && (m_frame[i] == 0x03))
+        {
+            if ((i < m_nb_frame - 1) && (m_frame[i + 1] > 0x03))
+                return ERROR_H264_SPS_EBSP_ERROR;
+            
+            if (i == m_nb_frame - 1) {
+                m_nb_frame = j;
+                return ERROR_SUCCESS;
+            }
+            
+            ++i;
+            count = 0;
+        }
+        
+        m_frame[j] = m_frame[i];
+        if (m_frame[i] == 0x00)
+            ++count;
+        else
+            count = 0;
+        ++j;
+    }
+    
+    m_nb_frame = j;
+    return ERROR_SUCCESS;
+}
+
 
 

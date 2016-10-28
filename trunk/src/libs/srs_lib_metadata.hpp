@@ -34,8 +34,11 @@ private:
     uint32_t ReadSE();
     
     
+    uint32_t EBSPtoRBSP();
+    
+    
 private:
-    const uint8_t  *m_frame;
-    uint32_t        m_nb_frame;
-    uint32_t        m_parse_pos;
+    uint8_t                *m_frame;
+    uint32_t                m_nb_frame;
+    uint32_t                m_parse_pos;
 };
