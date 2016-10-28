@@ -29,13 +29,13 @@ SpsParser::SpsParser(const uint8_t *frame, int nb_frame)
     m_nb_frame = nb_frame - 1;
     m_parse_pos = 0;
     
-    srs_info("SPS Data: %02x%02x %02x%02x %02x%02x %02x%02x %02x%02x",
+    srs_error("SPS Data: %02x%02x %02x%02x %02x%02x %02x%02x %02x%02x",
              m_frame[0], m_frame[1], m_frame[2], m_frame[3], m_frame[4],
              m_frame[5], m_frame[6], m_frame[7], m_frame[8], m_frame[9]);
     
     EBSPtoRBSP();
     
-    srs_info("SPS Data: %02x%02x %02x%02x %02x%02x %02x%02x %02x%02x",
+    srs_error("SPS Data: %02x%02x %02x%02x %02x%02x %02x%02x %02x%02x",
              m_frame[0], m_frame[1], m_frame[2], m_frame[3], m_frame[4],
              m_frame[5], m_frame[6], m_frame[7], m_frame[8], m_frame[9]);
 }
