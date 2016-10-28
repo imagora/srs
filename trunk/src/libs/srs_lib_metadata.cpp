@@ -21,6 +21,15 @@ enum ProfileIDC
 };
 
 
+enum
+{
+    CF_UNKNOWN = -1, //!< Unknown color format
+    YUV400     = 0,  //!< Monochrome
+    YUV420     = 1,  //!< 4:2:0
+    YUV422     = 2,  //!< 4:2:2
+    YUV444     = 3,  //!< 4:4:4
+};
+
 
 SpsParser::SpsParser(const uint8_t *frame, int nb_frame)
 {
@@ -53,13 +62,13 @@ int SpsParser::ParseSps(MetaData &metadata)
               m_frame[0], m_frame[1], m_frame[2], m_frame[3], m_frame[4],
               m_frame[5], m_frame[6], m_frame[7], m_frame[8], m_frame[9]);
     
-    
-    int frame_crop_left_offset=0;
-    int frame_crop_right_offset=0;
-    int frame_crop_top_offset=0;
-    int frame_crop_bottom_offset=0;
-    
     int profile_idc = ReadBits(8);
+    if (profile_idc != BASELINE && profile_idc != MAIN && profile_idc != EXTENDED &&
+        profile_idc != FREXT_HP && profile_idc != FREXT_Hi10P && profile_idc != FREXT_Hi422 &&
+        profile_idc != FREXT_Hi444 && profile_idc != FREXT_CAVLC444) {
+        return ERROR_H264_SPS_PARSE_ERROR;
+    }
+    
     // int constraint_set0_flag = ReadBit();
     ReadBit();
     // int constraint_set1_flag = ReadBit();
@@ -68,41 +77,36 @@ int SpsParser::ParseSps(MetaData &metadata)
     ReadBit();
     // int constraint_set3_flag = ReadBit();
     ReadBit();
-    // int constraint_set4_flag = ReadBit();
-    ReadBit();
-    // int constraint_set5_flag = ReadBit();
-    ReadBit();
-    // int reserved_zero_2bits  = ReadBits(2);
-    ReadBits(2);
+    // int reserved_zero_4bits  = ReadBits(4);
+    ReadBits(4);
+    
     // int level_idc = ReadBits(8);
     ReadBits(8);
     // int seq_parameter_set_id = ReadExponentialGolombCode();
     ReadExponentialGolombCode();
     
-    if (profile_idc != BASELINE && profile_idc != MAIN && profile_idc != EXTENDED &&
-        profile_idc != FREXT_HP && profile_idc != FREXT_Hi10P && profile_idc != FREXT_Hi422 &&
-        profile_idc != FREXT_Hi444 && profile_idc != FREXT_CAVLC444) {
-        return ERROR_H264_SPS_PARSE_ERROR;
-    }
-    
     if (profile_idc == FREXT_HP || profile_idc == FREXT_Hi10P || profile_idc == FREXT_Hi422 ||
         profile_idc == FREXT_Hi444 || profile_idc == FREXT_CAVLC444) {
-        int chroma_format_idc = ReadExponentialGolombCode();
         
-        if (chroma_format_idc == 3) {
+        int chroma_format_idc = ReadExponentialGolombCode();
+        if (chroma_format_idc == YUV444) {
             // int residual_colour_transform_flag = ReadBit();
             ReadBit();
         }
-        // int bit_depth_luma_minus8 = ReadExponentialGolombCode();
-        ReadExponentialGolombCode();
-        // int bit_depth_chroma_minus8 = ReadExponentialGolombCode();
-        ReadExponentialGolombCode();
+        
+         int bit_depth_luma_minus8 = ReadExponentialGolombCode();
+         int bit_depth_chroma_minus8 = ReadExponentialGolombCode();
+        if (bit_depth_luma_minus8 + 8 > sizeof(uint16_t) * 8 || bit_depth_chroma_minus8 + 8 > sizeof(uint16_t) * 8) {
+            return ERROR_H264_SPS_PARSE_ERROR;
+        }
+        
         // int qpprime_y_zero_transform_bypass_flag = ReadBit();
         ReadBit();
-        int seq_scaling_matrix_present_flag = ReadBit();
         
+        int seq_scaling_matrix_present_flag = ReadBit();
         if (seq_scaling_matrix_present_flag) {
-            for (int i = 0; i < 8; i++) {
+            uint32_t scalingList = (chroma_format_idc != YUV444) ? 8 : 12;
+            for (int i = 0; i < scalingList; ++i) {
                 int seq_scaling_list_present_flag = ReadBit();
                 if (seq_scaling_list_present_flag) {
                     int sizeOfScalingList = (i < 6) ? 16 : 64;
@@ -143,8 +147,10 @@ int SpsParser::ParseSps(MetaData &metadata)
     
     // int max_num_ref_frames = ReadExponentialGolombCode();
     ReadExponentialGolombCode();
-    // int gaps_in_frame_num_value_allowed_flag = ReadBit();
-    ReadBit();
+    int gaps_in_frame_num_value_allowed_flag = ReadBit();
+    if (gaps_in_frame_num_value_allowed_flag != 0)
+        return ERROR_H264_SPS_PARSE_ERROR;
+    
     int pic_width_in_mbs_minus1 = ReadExponentialGolombCode();
     int pic_height_in_map_units_minus1 = ReadExponentialGolombCode();
     int frame_mbs_only_flag = ReadBit();
@@ -155,6 +161,11 @@ int SpsParser::ParseSps(MetaData &metadata)
     
     // int direct_8x8_inference_flag = ReadBit();
     ReadBit();
+    
+    int frame_crop_left_offset=0;
+    int frame_crop_right_offset=0;
+    int frame_crop_top_offset=0;
+    int frame_crop_bottom_offset=0;
     int frame_cropping_flag = ReadBit();
     if (frame_cropping_flag) {
         frame_crop_left_offset = ReadExponentialGolombCode();
@@ -166,9 +177,9 @@ int SpsParser::ParseSps(MetaData &metadata)
     // int vui_parameters_present_flag = ReadBit();
     ReadBit();
     
-    metadata.width = ((pic_width_in_mbs_minus1 + 1) * 16) - frame_crop_bottom_offset * 2 - frame_crop_top_offset * 2;
-    metadata.height = ((2 - frame_mbs_only_flag) * (pic_height_in_map_units_minus1 + 1) * 16) - (frame_crop_right_offset * 2) - (frame_crop_left_offset * 2);
-    srs_error("SPS Data: %u %u", metadata.width, metadata.height);
+    metadata.width = (pic_width_in_mbs_minus1 + 1 * 16) - frame_crop_bottom_offset * 2 - frame_crop_top_offset * 2;
+    metadata.height = (2 - frame_mbs_only_flag) * (pic_height_in_map_units_minus1 + 1) * 16 - frame_crop_right_offset * 2 - frame_crop_left_offset * 2;
+    srs_error("SPS Data width: %u height: %u", metadata.width, metadata.height);
     return ret;
 }
 
