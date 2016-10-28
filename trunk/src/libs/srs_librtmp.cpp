@@ -49,6 +49,7 @@ using namespace std;
 #include <srs_lib_bandwidth.hpp>
 #include <srs_raw_avc.hpp>
 #include <srs_lib_log.hpp>
+#include <srs_lib_metadata.hpp>
 
 // kernel module.
 ISrsLog* _srs_log = new SrsSysLog();
@@ -1353,6 +1354,12 @@ int srs_write_h264_raw_frame(Context* context,
         }
         context->h264_sps_changed = true;
         context->h264_sps = sps;
+        
+        MetaData metadata;
+        SpsParser spsParser(frame, frame_size);
+        if (spsParser.ParseSps(metadata) == ERROR_SUCCESS) {
+            context->rtmp->onMetaData(metadata.width, metadata.height);
+        }
         
         return ret;
     }

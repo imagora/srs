@@ -2346,19 +2346,33 @@ int SrsRtmpClient::fmle_publish(string stream, int& stream_id)
     }
     
     // onMetaData
-    uint32_t width = 360;
-    uint32_t height = 640;
+    uint32_t width = 640;
+    uint32_t height = 360;
     if (true && width != 0 && height != 0) {
         SrsOnMetaDataPacket* pkt = new SrsOnMetaDataPacket();
         pkt->metadata->set("width", SrsAmf0Any::number(width));
         pkt->metadata->set("height", SrsAmf0Any::number(height));
-        if ((ret = protocol->send_and_free_packet(pkt, stream_id)) != ERROR_SUCCESS) {
+        if ((ret = protocol->send_and_free_packet(pkt, 0)) != ERROR_SUCCESS) {
             srs_error("send onMetaData failed. stream=%s, stream_id=%d, width=%u, height=%u, ret=%d", stream.c_str(), stream_id, width, height, ret);
             return ret;
         }
     }
     
     return ret;
+}
+
+int SrsRtmpClient::onMetaData(int width, int height)
+{
+    // onMetaData
+    SrsOnMetaDataPacket* pkt = new SrsOnMetaDataPacket();
+    pkt->metadata->set("width", SrsAmf0Any::number(width));
+    pkt->metadata->set("height", SrsAmf0Any::number(height));
+    if ((ret = protocol->send_and_free_packet(pkt, 0)) != ERROR_SUCCESS) {
+        srs_error("send onMetaData failed. width=%u, height=%u, ret=%d", width, height, ret);
+        return ret;
+    }
+    
+    return ERROR_SUCCESS;
 }
 
 SrsRtmpServer::SrsRtmpServer(ISrsProtocolReaderWriter* skt)

@@ -782,6 +782,11 @@ public:
      *       connect-app => FMLE publish
      */
     virtual int fmle_publish(std::string stream, int& stream_id);
+    /**
+     * send onMetaData
+     *
+     */
+    virtual int onMetaData(int width, int height);
 public:
     /**
      * expect a specified message, drop others util got specified one.
