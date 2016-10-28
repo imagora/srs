@@ -1356,7 +1356,7 @@ int srs_write_h264_raw_frame(Context* context,
         context->h264_sps = sps;
         
         MetaData metadata;
-        SpsParser spsParser(frame, frame_size);
+        SpsParser spsParser(reinterpret_cast<const uint8_t *>(frame), static_cast<uint32_t>(frame_size));
         if (spsParser.ParseSps(metadata) == ERROR_SUCCESS) {
             context->rtmp->onMetaData(metadata.width, metadata.height);
         }

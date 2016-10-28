@@ -43,15 +43,24 @@ int SpsParser::ParseSps(MetaData &metadata)
     int frame_crop_bottom_offset=0;
     
     int profile_idc = ReadBits(8);
-    int constraint_set0_flag = ReadBit();
-    int constraint_set1_flag = ReadBit();
-    int constraint_set2_flag = ReadBit();
-    int constraint_set3_flag = ReadBit();
-    int constraint_set4_flag = ReadBit();
-    int constraint_set5_flag = ReadBit();
-    int reserved_zero_2bits  = ReadBits(2);
-    int level_idc = ReadBits(8);
-    int seq_parameter_set_id = ReadExponentialGolombCode();
+    // int constraint_set0_flag = ReadBit();
+    ReadBit();
+    // int constraint_set1_flag = ReadBit();
+    ReadBit();
+    // int constraint_set2_flag = ReadBit();
+    ReadBit();
+    // int constraint_set3_flag = ReadBit();
+    ReadBit();
+    // int constraint_set4_flag = ReadBit();
+    ReadBit();
+    // int constraint_set5_flag = ReadBit();
+    ReadBit();
+    // int reserved_zero_2bits  = ReadBits(2);
+    ReadBits(2);
+    // int level_idc = ReadBits(8);
+    ReadBits(8);
+    // int seq_parameter_set_id = ReadExponentialGolombCode();
+    ReadExponentialGolombCode();
     
     if (profile_idc != BASELINE && profile_idc != MAIN && profile_idc != EXTENDED &&
         profile_idc != FREXT_HP && profile_idc != FREXT_Hi10P && profile_idc != FREXT_Hi422 &&
@@ -64,11 +73,15 @@ int SpsParser::ParseSps(MetaData &metadata)
         int chroma_format_idc = ReadExponentialGolombCode();
         
         if (chroma_format_idc == 3) {
-            int residual_colour_transform_flag = ReadBit();
+            // int residual_colour_transform_flag = ReadBit();
+            ReadBit();
         }
-        int bit_depth_luma_minus8 = ReadExponentialGolombCode();
-        int bit_depth_chroma_minus8 = ReadExponentialGolombCode();
-        int qpprime_y_zero_transform_bypass_flag = ReadBit();
+        // int bit_depth_luma_minus8 = ReadExponentialGolombCode();
+        ReadExponentialGolombCode();
+        // int bit_depth_chroma_minus8 = ReadExponentialGolombCode();
+        ReadExponentialGolombCode();
+        // int qpprime_y_zero_transform_bypass_flag = ReadBit();
+        ReadBit();
         int seq_scaling_matrix_present_flag = ReadBit();
         
         if (seq_scaling_matrix_present_flag) {
@@ -90,32 +103,41 @@ int SpsParser::ParseSps(MetaData &metadata)
         }
     }
     
-    int log2_max_frame_num_minus4 = ReadExponentialGolombCode();
+    // int log2_max_frame_num_minus4 = ReadExponentialGolombCode();
+    ReadExponentialGolombCode();
     int pic_order_cnt_type = ReadExponentialGolombCode();
     if (pic_order_cnt_type == 0) {
-        int log2_max_pic_order_cnt_lsb_minus4 = ReadExponentialGolombCode();
+        // int log2_max_pic_order_cnt_lsb_minus4 = ReadExponentialGolombCode();
+        ReadExponentialGolombCode();
     } else if (pic_order_cnt_type == 1) {
-        int delta_pic_order_always_zero_flag = ReadBit();
-        int offset_for_non_ref_pic = ReadSE();
-        int offset_for_top_to_bottom_field = ReadSE();
+        // int delta_pic_order_always_zero_flag = ReadBit();
+        ReadBit();
+        // int offset_for_non_ref_pic = ReadSE();
+        ReadSE();
+        // int offset_for_top_to_bottom_field = ReadSE();
+        ReadSE();
         int num_ref_frames_in_pic_order_cnt_cycle = ReadExponentialGolombCode();
         
         for (int i = 0; i < num_ref_frames_in_pic_order_cnt_cycle; i++) {
-            //sps->offset_for_ref_frame[i] = ReadSE();
+            // sps->offset_for_ref_frame[i] = ReadSE();
             ReadSE();
         }
     }
     
-    int max_num_ref_frames = ReadExponentialGolombCode();
-    int gaps_in_frame_num_value_allowed_flag = ReadBit();
+    // int max_num_ref_frames = ReadExponentialGolombCode();
+    ReadExponentialGolombCode();
+    // int gaps_in_frame_num_value_allowed_flag = ReadBit();
+    ReadBit();
     int pic_width_in_mbs_minus1 = ReadExponentialGolombCode();
     int pic_height_in_map_units_minus1 = ReadExponentialGolombCode();
     int frame_mbs_only_flag = ReadBit();
     if (!frame_mbs_only_flag) {
-        int mb_adaptive_frame_field_flag = ReadBit();
+        // int mb_adaptive_frame_field_flag = ReadBit();
+        ReadBit();
     }
     
-    int direct_8x8_inference_flag = ReadBit();
+    // int direct_8x8_inference_flag = ReadBit();
+    ReadBit();
     int frame_cropping_flag = ReadBit();
     if (frame_cropping_flag) {
         frame_crop_left_offset = ReadExponentialGolombCode();
@@ -124,8 +146,8 @@ int SpsParser::ParseSps(MetaData &metadata)
         frame_crop_bottom_offset = ReadExponentialGolombCode();
     }
     
-    int vui_parameters_present_flag = ReadBit();
-    pStart++;
+    // int vui_parameters_present_flag = ReadBit();
+    ReadBit();
     
     metadata.width = ((pic_width_in_mbs_minus1 + 1) * 16) - frame_crop_bottom_offset * 2 - frame_crop_top_offset * 2;
     metadata.height = ((2 - frame_mbs_only_flag) * (pic_height_in_map_units_minus1 + 1) * 16) - (frame_crop_right_offset * 2) - (frame_crop_left_offset * 2);
