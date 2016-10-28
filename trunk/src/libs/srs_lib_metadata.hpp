@@ -34,7 +34,7 @@ private:
     uint32_t ReadSE();
     
     
-    uint32_t EBSPtoRBSP();
+    int EBSPtoRBSP();
     
     
 private:
