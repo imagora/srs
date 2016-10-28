@@ -2363,7 +2363,8 @@ int SrsRtmpClient::fmle_publish(string stream, int& stream_id)
 
 int SrsRtmpClient::onMetaData(int width, int height)
 {
-    // onMetaData
+    int ret = ERROR_SUCCESS;
+    
     SrsOnMetaDataPacket* pkt = new SrsOnMetaDataPacket();
     pkt->metadata->set("width", SrsAmf0Any::number(width));
     pkt->metadata->set("height", SrsAmf0Any::number(height));
@@ -2372,7 +2373,7 @@ int SrsRtmpClient::onMetaData(int width, int height)
         return ret;
     }
     
-    return ERROR_SUCCESS;
+    return ret;
 }
 
 SrsRtmpServer::SrsRtmpServer(ISrsProtocolReaderWriter* skt)
