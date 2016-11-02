@@ -780,14 +780,14 @@ int srs_rtmp_play_stream(srs_rtmp_t rtmp)
     return ret;
 }
 
-int srs_rtmp_publish_stream(srs_rtmp_t rtmp)
+int srs_rtmp_publish_stream(srs_rtmp_t rtmp, int width/* = 0*/, int height/* = 0*/)
 {
     int ret = ERROR_SUCCESS;
     
     srs_assert(rtmp != NULL);
     Context* context = (Context*)rtmp;
     
-    if ((ret = context->rtmp->fmle_publish(context->stream, context->stream_id)) != ERROR_SUCCESS) {
+    if ((ret = context->rtmp->fmle_publish(context->stream, context->stream_id, width, height)) != ERROR_SUCCESS) {
         return ret;
     }
     

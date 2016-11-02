@@ -781,7 +781,7 @@ public:
      * start publish stream. use FMLE publish workflow:
      *       connect-app => FMLE publish
      */
-    virtual int fmle_publish(std::string stream, int& stream_id);
+    virtual int fmle_publish(std::string stream, int& stream_id, int width = 0, int height = 0);
 public:
     /**
      * expect a specified message, drop others util got specified one.
