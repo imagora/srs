@@ -222,7 +222,7 @@ int connect_oc(srs_rtmp_t ortmp)
     }
     srs_human_trace("ortmp connect vhost/app success");
     
-    if ((ret = srs_rtmp_publish_stream(ortmp)) != 0) {
+    if ((ret = srs_rtmp_publish_stream(ortmp, 0, 0)) != 0) {
         srs_human_trace("ortmp publish stream failed. ret=%d", ret);
         return ret;
     }
