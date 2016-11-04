@@ -207,7 +207,7 @@ extern int srs_rtmp_play_stream(srs_rtmp_t rtmp);
 * next: destroy
 * @return 0, success; otherwise, failed.
 */
-extern int srs_rtmp_publish_stream(srs_rtmp_t rtmp, int width, int height);
+extern int srs_rtmp_publish_stream(srs_rtmp_t rtmp);
     
 /**
  * send metadata.
