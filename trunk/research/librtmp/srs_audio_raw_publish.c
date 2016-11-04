@@ -128,7 +128,7 @@ int main(int argc, char** argv)
     }
     srs_human_trace("connect vhost/app success");
     
-    if (srs_rtmp_publish_stream(rtmp, 0, 0) != 0) {
+    if (srs_rtmp_publish_stream(rtmp) != 0) {
         srs_human_trace("publish stream failed.");
         goto rtmp_destroy;
     }
