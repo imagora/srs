@@ -2371,7 +2371,7 @@ int SrsRtmpClient::metadata(const RtmpMetadata &metadata, int stream_id)
     pkt->metadata->set("height", SrsAmf0Any::number(metadata.m_height));
     
     if ((ret = protocol->send_and_free_packet(pkt, stream_id)) != ERROR_SUCCESS) {
-        srs_error("send onMetaData failed. stream_id=%d, width=%u, height=%u, ret=%d", stream_id, width, height, ret);
+        srs_error("send onMetaData failed. stream_id=%d, width=%u, height=%u, ret=%d", stream_id, metadata.m_width, metadata.m_height, ret);
         return ret;
     }
     
