@@ -780,7 +780,7 @@ int srs_rtmp_play_stream(srs_rtmp_t rtmp)
     return ret;
 }
 
-int srs_rtmp_publish_stream(srs_rtmp_t rtmp)
+int srs_rtmp_publish_stream(srs_rtmp_t rtmp, int width, int height)
 {
     int ret = ERROR_SUCCESS;
     
