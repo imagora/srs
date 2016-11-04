@@ -652,6 +652,55 @@ public:
     virtual int create_c2();
 };
 
+/// metadata from ffmpeg
+/// meta-info:
+/// metadatacreator:Yet Another Metadata Injector for FLV - Version 1.8
+/// encoder:Lavf57.41.100
+/// filesize:0
+/// duration:0
+
+/// audiocodecid:10
+/// audiosize:4609156
+/// audiosamplesize:16
+/// stereo:true
+
+/// videocodecid:7
+/// videosize:47264864
+/// videodatarate:0
+/// framerate:25
+/// width:1280
+/// height:720
+/// lastkeyframelocation:51960109
+struct RtmpMetadata
+{
+    std::string m_metadatacreator;
+    std::string m_encoder;
+    
+    uint32_t    m_audiocodecid;
+    uint32_t    m_audiosamplesize;
+    bool        m_stereo;
+    
+    uint32_t    m_videocodecid;
+    uint32_t    m_videodatarate;
+    uint32_t    m_framerate;
+    uint32_t    m_width;
+    uint32_t    m_height;
+    
+    RtmpMetadata()
+        : m_metadatacreator("Agora.io SDK"),
+        m_encoder("Agora.io Encoder"),
+        m_audiocodecid(10),
+        m_audiosamplesize(16),
+        m_stereo(false),
+        m_videocodecid(7),
+        m_videodatarate(0),
+        m_framerate(15),
+        m_width(0),
+        m_height(0)
+        {}
+};
+
+
 /**
  * implements the client role protocol.
  */
@@ -781,7 +830,11 @@ public:
      * start publish stream. use FMLE publish workflow:
      *       connect-app => FMLE publish
      */
-    virtual int fmle_publish(std::string stream, int& stream_id, int width = 0, int height = 0);
+    virtual int fmle_publish(std::string stream, int& stream_id);
+    /**
+     * metadata.
+     */
+    virtual int metadata(const RtmpMetadata &metadata, int stream_id);
 public:
     /**
      * expect a specified message, drop others util got specified one.

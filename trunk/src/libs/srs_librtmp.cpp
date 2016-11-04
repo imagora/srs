@@ -780,14 +780,32 @@ int srs_rtmp_play_stream(srs_rtmp_t rtmp)
     return ret;
 }
 
-int srs_rtmp_publish_stream(srs_rtmp_t rtmp, int width, int height)
+int srs_rtmp_publish_stream(srs_rtmp_t rtmp)
 {
     int ret = ERROR_SUCCESS;
     
     srs_assert(rtmp != NULL);
     Context* context = (Context*)rtmp;
     
-    if ((ret = context->rtmp->fmle_publish(context->stream, context->stream_id, width, height)) != ERROR_SUCCESS) {
+    if ((ret = context->rtmp->fmle_publish(context->stream, context->stream_id)) != ERROR_SUCCESS) {
+        return ret;
+    }
+    
+    return ret;
+}
+    
+int srs_rtmp_metadata(srs_rtmp_t rtmp, int width, int height)
+{
+    int ret = ERROR_SUCCESS;
+    
+    srs_assert(rtmp != NULL);
+    Context* context = (Context*)rtmp;
+    
+    RtmpMetadata metadata;
+    metadata.m_width = width;
+    metadata.m_height = height;
+    
+    if ((ret = context->rtmp->metadata(metadata, context->stream_id)) != ERROR_SUCCESS) {
         return ret;
     }
     

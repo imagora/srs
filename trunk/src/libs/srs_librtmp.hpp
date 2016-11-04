@@ -208,7 +208,16 @@ extern int srs_rtmp_play_stream(srs_rtmp_t rtmp);
 * @return 0, success; otherwise, failed.
 */
 extern int srs_rtmp_publish_stream(srs_rtmp_t rtmp, int width, int height);
-
+    
+/**
+ * send metadata.
+ * category: metadata
+ * previous: connect-app
+ * next: destroy
+ * @return 0, success; otherwise, failed.
+ */
+extern int srs_rtmp_metadata(srs_rtmp_t rtmp, int width, int height);
+    
 /**
 * do bandwidth check with srs server.
 * 
