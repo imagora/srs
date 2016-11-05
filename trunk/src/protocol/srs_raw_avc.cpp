@@ -59,14 +59,26 @@ int SrsRawH264Stream::annexb_demux(SrsStream* stream, char** pframe, int* pnb_fr
         
         // find the last frame prefixed by annexb format.
         stream->skip(pnb_start_code);
-        char* buf = stream->data()+stream->pos();
-        printf("Current NALU head is: %d %d %d %d!\n", buf[-3], buf[-2], buf[-1], buf[0]);
+        char* buf = stream->data() + stream->pos();
+        printf("Current NALU head is: %d %d %d %d!\n", buf[-3],
+               buf[-2], buf[-1], buf[0]);
         int nalu_type = buf[0] & 0x1f;
         if (nalu_type != 7 && nalu_type != 8 && nalu_type != 6)
         {
-            printf("Skipped to the end of the stream!\n");
+            printf("Skipped to the begin of non slice nalu!\n");
             while (!stream->empty())
             {
+                if (srs_avc_startswith_annexb(stream, NULL))
+                {
+                    char* temp = stream->data() + stream->pos();
+                    int nalu_temp = temp[0] & 0x1f;
+                    if (nalu_temp == 6 || nalu_temp == 7 || nalu_temp == 8)
+                    {
+                        printf("Found next non-slice NALU head: %d %d %d %d!\n",
+                               temp[-3], temp[-2], temp[-1], temp[0]);
+                        break;
+                    }
+                }
                 stream->skip(1);
             }
         }
