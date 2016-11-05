@@ -65,7 +65,7 @@ int SrsRawH264Stream::annexb_demux(SrsStream* stream, char** pframe, int* pnb_fr
         int nalu_type = buf[0] & 0x1f;
         if (nalu_type != 7 && nalu_type != 8 && nalu_type != 6)
         {
-            printf("Skipped to the begin of non slice nalu!\n");
+            printf("Skipped to the start of non-slice nalu!\n");
             while (!stream->empty())
             {
                 if (srs_avc_startswith_annexb(stream, NULL))
@@ -88,7 +88,7 @@ int SrsRawH264Stream::annexb_demux(SrsStream* stream, char** pframe, int* pnb_fr
         }
         while (!stream->empty()) {
             if (srs_avc_startswith_annexb(stream, NULL)) {
-                printf("Find a new NALU start!\n");
+                printf("Find a new NALU start!\n\n");
                 break;
             }
             stream->skip(1);
