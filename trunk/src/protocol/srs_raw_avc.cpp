@@ -78,6 +78,10 @@ int SrsRawH264Stream::annexb_demux(SrsStream* stream, char** pframe, int* pnb_fr
                                temp[-3], temp[-2], temp[-1], temp[0]);
                         break;
                     }
+                    else
+                    {
+                        printf("Found a continous slice, combine with previous.\n");
+                    }
                 }
                 stream->skip(1);
             }
