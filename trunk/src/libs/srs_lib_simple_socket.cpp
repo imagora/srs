@@ -85,6 +85,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         SrsBlockSyncSocket() {
             send_timeout = recv_timeout = ST_UTIME_NO_TIMEOUT;
             recv_bytes = send_bytes = 0;
+            last_send_time = 0;
             
             SOCKET_RESET(fd);
             SOCKET_SETUP();
