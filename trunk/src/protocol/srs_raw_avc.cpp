@@ -61,33 +61,33 @@ int SrsRawH264Stream::annexb_demux(SrsStream* stream, char** pframe, int* pnb_fr
         stream->skip(pnb_start_code);
 
         char* buf = stream->data() + stream->pos();
-        printf("At position %d, Current NALU head is: %02x %02x %02x %02x!\n",
-               stream->pos(), buf[-3], buf[-2], buf[-1], buf[0]);
+        // printf("At position %d, Current NALU head is: %02x %02x %02x %02x!\n",
+        //        stream->pos(), buf[-3], buf[-2], buf[-1], buf[0]);
         int nalu_type = buf[0] & 0x1f;
         if (nalu_type != 7 && nalu_type != 8 && nalu_type != 6)
         {
-            printf("Slice NALU!\n");
+            // printf("Slice NALU!\n");
             while (!stream->empty())
             {
                 int skip_bytes = 0;
                 if (srs_avc_startswith_annexb(stream, &skip_bytes))
                 {
-                    printf("Found the next NALU!\n");
+                    // printf("Found the next NALU!\n");
                     stream->skip(skip_bytes);
 
                     char* temp = stream->data() + stream->pos();
                     int nalu_temp = temp[0] & 0x1f;
                     if (nalu_temp == 6 || nalu_temp == 7 || nalu_temp == 8)
                     {
-                        printf("At position %d, Found next non-slice NALU head: %02x %02x %02x %02x!\n",
-                               stream->pos(), temp[-3], temp[-2], temp[-1], temp[0]);
+                        // printf("At position %d, Found next non-slice NALU head: %02x %02x %02x %02x!\n",
+                        //        stream->pos(), temp[-3], temp[-2], temp[-1], temp[0]);
                         break;
                     }
-                    else
-                    {
-                        printf("At position %d, Found a slice NALU: %02x %02x %02x %02x!\n",
-                               stream->pos(), temp[-3], temp[-2], temp[-1], temp[0]);
-                    }
+                    // else
+                    // {
+                    //     printf("At position %d, Found a slice NALU: %02x %02x %02x %02x!\n",
+                    //            stream->pos(), temp[-3], temp[-2], temp[-1], temp[0]);
+                    // }
                 }
                 else
                     stream->skip(1);
@@ -100,7 +100,7 @@ int SrsRawH264Stream::annexb_demux(SrsStream* stream, char** pframe, int* pnb_fr
             stream->skip(1);
         }
 
-        printf("Finish function %s\n\n", __FUNCTION__);
+        // printf("Finish function %s\n\n", __FUNCTION__);
         
         // demux the frame.
         *pnb_frame = stream->pos() - start;
