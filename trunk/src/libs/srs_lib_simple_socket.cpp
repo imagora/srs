@@ -221,6 +221,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         }
         
         skt->send_bytes += nb_write;
+        srs_update_system_time_ms();
         skt->last_send_time = srs_get_system_time_ms();
         
         return ret;

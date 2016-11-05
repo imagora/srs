@@ -2103,6 +2103,7 @@ int SrsRtmpClient::connect_app2(
         }
         
         if ((ret = protocol->send_and_free_packet(pkt, 0)) != ERROR_SUCCESS) {
+            srs_error("connect app2 send SrsConnectAppPacket failed, ret=%d", ret);
             return ret;
         }
     }
@@ -2112,6 +2113,7 @@ int SrsRtmpClient::connect_app2(
         SrsSetWindowAckSizePacket* pkt = new SrsSetWindowAckSizePacket();
         pkt->ackowledgement_window_size = 2500000;
         if ((ret = protocol->send_and_free_packet(pkt, 0)) != ERROR_SUCCESS) {
+            srs_error("connect app2 send SrsSetWindowAckSizePacket failed, ret=%d", ret);
             return ret;
         }
     }
