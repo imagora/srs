@@ -59,17 +59,19 @@ int SrsRawH264Stream::annexb_demux(SrsStream* stream, char** pframe, int* pnb_fr
         
         // find the last frame prefixed by annexb format.
         stream->skip(pnb_start_code);
+
         char* buf = stream->data() + stream->pos();
         printf("Current NALU head is: %d %d %d %d!\n", buf[-3],
                buf[-2], buf[-1], buf[0]);
         int nalu_type = buf[0] & 0x1f;
         if (nalu_type != 7 && nalu_type != 8 && nalu_type != 6)
         {
-            printf("Skipped to the start of non-slice nalu!\n");
+            printf("Slice NALU!\n");
             while (!stream->empty())
             {
                 if (srs_avc_startswith_annexb(stream, NULL))
                 {
+                    printf("Found the next NALU!\n");
                     char* temp = stream->data() + stream->pos();
                     int nalu_temp = temp[0] & 0x1f;
                     if (nalu_temp == 6 || nalu_temp == 7 || nalu_temp == 8)
@@ -80,7 +82,8 @@ int SrsRawH264Stream::annexb_demux(SrsStream* stream, char** pframe, int* pnb_fr
                     }
                     else
                     {
-                        printf("Found a continous slice, combine with previous.\n");
+                        printf("Found a slice NALU: %d %d %d %d!\n",
+                               temp[-3], temp[-2], temp[-1], temp[0]);
                     }
                 }
                 stream->skip(1);
@@ -88,11 +91,12 @@ int SrsRawH264Stream::annexb_demux(SrsStream* stream, char** pframe, int* pnb_fr
         }
         while (!stream->empty()) {
             if (srs_avc_startswith_annexb(stream, NULL)) {
-                printf("Find a new NALU start!\n\n");
                 break;
             }
             stream->skip(1);
         }
+
+        printf("Finish function %s\n\n", __FUNCTION__);
         
         // demux the frame.
         *pnb_frame = stream->pos() - start;
