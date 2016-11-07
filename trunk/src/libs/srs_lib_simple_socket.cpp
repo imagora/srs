@@ -133,7 +133,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         }
         
         struct timeval t;
-        t.tv_sec = 5;
+        t.tv_sec = 10;
         t.tv_usec = 0;
         
         if (-1 == ::setsockopt(skt->fd, SOL_SOCKET, SO_SNDTIMEO, &t, sizeof(t))) {
