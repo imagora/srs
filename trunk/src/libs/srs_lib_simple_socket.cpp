@@ -66,6 +66,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <errno.h>
 
 #include <srs_kernel_utility.hpp>
+#include <future>
+#include <chrono>
 
 #ifndef ST_UTIME_NO_TIMEOUT
     #define ST_UTIME_NO_TIMEOUT -1
@@ -80,12 +82,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         int64_t send_timeout;
         int64_t recv_bytes;
         int64_t send_bytes;
-        int64_t last_send_time; // ms
         
         SrsBlockSyncSocket() {
             send_timeout = recv_timeout = ST_UTIME_NO_TIMEOUT;
             recv_bytes = send_bytes = 0;
-            last_send_time = 0;
             
             SOCKET_RESET(fd);
             SOCKET_SETUP();
@@ -194,18 +194,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
     int srs_hijack_io_writev(srs_hijack_io_t ctx, const iovec *iov, int iov_size, ssize_t* nwrite)
     {
+        int ret = ERROR_SUCCESS;
         SrsBlockSyncSocket* skt = (SrsBlockSyncSocket*)ctx;
         
-        srs_update_system_time_ms();
-        if (skt->last_send_time != 0 && srs_get_system_time_ms() - skt->last_send_time > skt->send_timeout / 1000) {
-            srs_error("cannot send packet last send: %" PRIu64 ", now: %" PRIu64 ", timeout: %" PRIu64 "", skt->last_send_time, srs_get_system_time_ms(), skt->send_timeout);
-            skt->last_send_time = 0;
-            return ERROR_SOCKET_WRITE;
+        // writev in a thread to avoid waiting CLOSE_WAIT
+        auto writev_future = std::async(std::launch::async, [](){return ::writev(skt->fd, iov, iov_size);});
+        if (writev_future.wait_for(std::chrono::microseconds(500)) == std::future_status::timeout) {
+            srs_error("cannot send packet timeout");
+            return ERROR_SOCKET_TIMEOUT;
         }
-        
-        int ret = ERROR_SUCCESS;
-        ssize_t nb_write = ::writev(skt->fd, iov, iov_size);
-        
+        ssize_t nb_write = writev_future.get();
         if (nwrite) {
             *nwrite = nb_write;
         }
@@ -225,9 +223,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         }
         
         skt->send_bytes += nb_write;
-        srs_update_system_time_ms();
-        skt->last_send_time = srs_get_system_time_ms();
-        
         return ret;
     }
     bool srs_hijack_io_is_never_timeout(srs_hijack_io_t ctx, int64_t timeout_us)
