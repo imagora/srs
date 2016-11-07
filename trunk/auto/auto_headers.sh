@@ -209,16 +209,16 @@ if [ $SRS_LOG_VERBOSE = YES ]; then
 else
     echo "#undef SRS_AUTO_VERBOSE" >> $SRS_AUTO_HEADERS_H
 fi
-#if [ $SRS_LOG_INFO = YES ]; then
+if [ $SRS_LOG_INFO = YES ]; then
     echo "#define SRS_AUTO_INFO" >> $SRS_AUTO_HEADERS_H
-#else
-#    echo "#undef SRS_AUTO_INFO" >> $SRS_AUTO_HEADERS_H
-#fi
-#if [ $SRS_LOG_TRACE = YES ]; then
+else
+    echo "#undef SRS_AUTO_INFO" >> $SRS_AUTO_HEADERS_H
+fi
+if [ $SRS_LOG_TRACE = YES ]; then
     echo "#define SRS_AUTO_TRACE" >> $SRS_AUTO_HEADERS_H
-#else
-#    echo "#undef SRS_AUTO_TRACE" >> $SRS_AUTO_HEADERS_H
-#fi
+else
+    echo "#undef SRS_AUTO_TRACE" >> $SRS_AUTO_HEADERS_H
+fi
 
 # prefix
 echo "" >> $SRS_AUTO_HEADERS_H
