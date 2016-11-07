@@ -22,7 +22,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #include <srs_lib_simple_socket.hpp>
-
+#include <srs_lib_log.hpp>
 #include <srs_kernel_error.hpp>
 
 // for srs-librtmp, @see https://github.com/ossrs/srs/issues/213
@@ -198,6 +198,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         
         srs_update_system_time_ms();
         if (skt->last_send_time != 0 && srs_get_system_time_ms() - skt->last_send_time > skt->send_timeout / 1000) {
+            srs_error("cannot send packet last send: %" PRIu64 ", now: %" PRIu64 ", timeout: %" PRIu64 "", skt->last_send_time, srs_get_system_time_ms(), skt->send_timeout);
             skt->last_send_time = 0;
             return ERROR_SOCKET_WRITE;
         }
@@ -215,9 +216,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         if (nb_write <= 0) {
             // @see https://github.com/ossrs/srs/issues/200
             if (nb_write < 0 && SOCKET_ERRNO() == SOCKET_ETIME) {
+                srs_error("cannot send packet nb_write: %d, errno: %d", nb_write, SOCKET_ERRNO());
                 return ERROR_SOCKET_TIMEOUT;
             }
             
+            srs_error("cannot send packet nb_write: %d", nb_write);
             return ERROR_SOCKET_WRITE;
         }
         
