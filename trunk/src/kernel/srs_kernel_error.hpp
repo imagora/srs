@@ -51,6 +51,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define ERROR_SOCKET_WAIT                   1010
 #define ERROR_SOCKET_TIMEOUT                1011
 #define ERROR_SOCKET_CONNECT                1012
+#define ERROR_SOCKET_SETOPT                 1059
 #define ERROR_ST_SET_EPOLL                  1013
 #define ERROR_ST_INITIALIZE                 1014
 #define ERROR_ST_OPEN_SOCKET                1015

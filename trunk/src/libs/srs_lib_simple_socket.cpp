@@ -28,6 +28,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // for srs-librtmp, @see https://github.com/ossrs/srs/issues/213
 #ifndef _WIN32
     #define SOCKET_ETIME ETIME
+    #define SOCKET_ETIMEOUT ETIMEDOUT
+    #define SOCKET_EDEADLK EDEADLK
     #define SOCKET_ECONNRESET ECONNRESET
 
     #define SOCKET_ERRNO() errno
@@ -130,6 +132,20 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             return ERROR_SOCKET_CONNECT;
         }
         
+        struct timeval t;
+        t.tv_sec = 5;
+        t.tv_usec = 0;
+        
+        if (-1 == ::setsockopt(skt->fd, SOL_SOCKET, SO_SNDTIMEO, &t, sizeof(t))) {
+            srs_error("failed to set socket send timeout %d", skt->fd);
+            return ERROR_SOCKET_SETOPT;
+        }
+        
+        if (-1 == ::setsockopt(skt->fd, SOL_SOCKET, SO_RCVTIMEO, &t, sizeof(t))) {
+            srs_error("failed to set socket recv timeout %d", skt->fd);
+            return ERROR_SOCKET_SETOPT;
+        }
+        
         return ERROR_SUCCESS;
     }
     int srs_hijack_io_read(srs_hijack_io_t ctx, void* buf, size_t size, ssize_t* nread)
@@ -147,7 +163,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         // On success a non-negative integer indicating the number of bytes actually read is returned 
         // (a value of 0 means the network connection is closed or end of file is reached).
         if (nb_read <= 0) {
-            if (nb_read < 0 && SOCKET_ERRNO() == SOCKET_ETIME) {
+            if (nb_read < 0 && (SOCKET_ERRNO() == SOCKET_ETIME || SOCKET_ERRNO() == SOCKET_ETIMEOUT || SOCKET_ERRNO() == SOCKET_EDEADLK)) {
                 return ERROR_SOCKET_TIMEOUT;
             }
             
@@ -215,7 +231,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         // returned, and errno is set appropriately.
         if (nb_write <= 0) {
             // @see https://github.com/ossrs/srs/issues/200
-            if (nb_write < 0 && SOCKET_ERRNO() == SOCKET_ETIME) {
+            if (nb_write < 0 && (SOCKET_ERRNO() == SOCKET_ETIME || SOCKET_ERRNO() == SOCKET_ETIMEOUT || SOCKET_ERRNO() == SOCKET_EDEADLK)) {
                 srs_error("cannot send packet nb_write: %d, errno: %d", nb_write, SOCKET_ERRNO());
                 return ERROR_SOCKET_TIMEOUT;
             }
