@@ -675,9 +675,14 @@ struct RtmpMetadata
 {
     std::string m_metadatacreator;
     std::string m_encoder;
+    uint32_t    m_filesize;
+    uint32_t    m_duration;
+//    uint32_t    m_servertime;
     
     uint32_t    m_audiocodecid;
     uint32_t    m_audiosamplesize;
+    uint32_t    m_audiodatarate;
+    uint32_t    m_audiosamplerate;
     bool        m_stereo;
     
     uint32_t    m_videocodecid;
@@ -685,12 +690,18 @@ struct RtmpMetadata
     uint32_t    m_framerate;
     uint32_t    m_width;
     uint32_t    m_height;
+    std::map<std::string, std::string> m_userDefine;
     
     RtmpMetadata()
         : m_metadatacreator("Agora.io SDK"),
         m_encoder("Agora.io Encoder"),
+        m_filesize(0),
+        m_duration(0),
+//        m_servertime(0),
         m_audiocodecid(10),
         m_audiosamplesize(16),
+        m_audiodatarate(48),
+        m_audiosamplerate(48000),
         m_stereo(false),
         m_videocodecid(7),
         m_videodatarate(0),

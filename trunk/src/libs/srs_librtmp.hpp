@@ -216,7 +216,8 @@ extern int srs_rtmp_publish_stream(srs_rtmp_t rtmp);
  * next: destroy
  * @return 0, success; otherwise, failed.
  */
-extern int srs_rtmp_metadata(srs_rtmp_t rtmp, int width, int height);
+extern int srs_rtmp_metadata(srs_rtmp_t rtmp, int width, int height, int audiodatarate, int audiosamplerate);
+extern int srs_rtmp_metadata2(srs_rtmp_t rtmp, const char **keys, const char **values, int length);
     
 /**
 * do bandwidth check with srs server.

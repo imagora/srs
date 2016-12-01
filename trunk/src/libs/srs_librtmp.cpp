@@ -794,7 +794,7 @@ int srs_rtmp_publish_stream(srs_rtmp_t rtmp)
     return ret;
 }
     
-int srs_rtmp_metadata(srs_rtmp_t rtmp, int width, int height)
+int srs_rtmp_metadata(srs_rtmp_t rtmp, int width, int height, int audiodatarate, int audiosamplerate)
 {
     int ret = ERROR_SUCCESS;
     
@@ -804,6 +804,29 @@ int srs_rtmp_metadata(srs_rtmp_t rtmp, int width, int height)
     RtmpMetadata metadata;
     metadata.m_width = width;
     metadata.m_height = height;
+    metadata.m_audiodatarate = audiodatarate;
+    metadata.m_audiosamplerate = audiosamplerate;
+    
+    if ((ret = context->rtmp->metadata(metadata, context->stream_id)) != ERROR_SUCCESS) {
+        return ret;
+    }
+    
+    return ret;
+}
+    
+int srs_rtmp_metadata2(srs_rtmp_t rtmp, const char **keys, const char **values, int length)
+{
+    int ret = ERROR_SUCCESS;
+    
+    srs_assert(rtmp != NULL);
+    Context* context = (Context*)rtmp;
+    
+    RtmpMetadata metadata;
+//    metadata.m_width = width;
+//    metadata.m_height = height;
+    for (int i = 0; i < length; ++i) {
+        metadata.m_userDefine[keys[i]] = values[i];
+    }
     
     if ((ret = context->rtmp->metadata(metadata, context->stream_id)) != ERROR_SUCCESS) {
         return ret;
