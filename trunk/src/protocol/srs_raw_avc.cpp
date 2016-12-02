@@ -538,16 +538,16 @@ int SrsRawAacStream::mux_sequence_header(SrsRawAacStreamCodec* codec, string& sh
 
     // override the aac samplerate by user specified.
     // @see https://github.com/ossrs/srs/issues/212#issuecomment-64146899
-    switch (codec->sound_rate) {
-        case SrsCodecAudioSampleRate11025: 
-            samplingFrequencyIndex = 0x0a; break;
-        case SrsCodecAudioSampleRate22050: 
-            samplingFrequencyIndex = 0x07; break;
-        case SrsCodecAudioSampleRate44100: 
-            samplingFrequencyIndex = 0x04; break;
-        default:
-            break;
-    }
+//    switch (codec->sound_rate) {
+//        case SrsCodecAudioSampleRate11025: 
+//            samplingFrequencyIndex = 0x0a; break;
+//        case SrsCodecAudioSampleRate22050: 
+//            samplingFrequencyIndex = 0x07; break;
+//        case SrsCodecAudioSampleRate44100: 
+//            samplingFrequencyIndex = 0x04; break;
+//        default:
+//            break;
+//    }
 
     sh = "";
 
