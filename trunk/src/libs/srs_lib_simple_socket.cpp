@@ -128,10 +128,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         addr.sin_port = htons(port);
         addr.sin_addr.s_addr = inet_addr(server_ip);
         
-        if(::connect(skt->fd, (const struct sockaddr*)&addr, sizeof(sockaddr_in)) < 0){
-            return ERROR_SOCKET_CONNECT;
-        }
-        
         struct timeval t;
         t.tv_sec = 5;
         t.tv_usec = 0;
@@ -144,6 +140,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         if (-1 == ::setsockopt(skt->fd, SOL_SOCKET, SO_RCVTIMEO, &t, sizeof(t))) {
             srs_error("failed to set socket recv timeout %d", skt->fd);
             return ERROR_SOCKET_SETOPT;
+        }
+        
+        if(::connect(skt->fd, (const struct sockaddr*)&addr, sizeof(sockaddr_in)) < 0){
+            return ERROR_SOCKET_CONNECT;
         }
         
         return ERROR_SUCCESS;
