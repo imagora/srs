@@ -2340,7 +2340,8 @@ int SrsRtmpClient::fmle_publish(string stream, int& stream_id)
         SrsOnStatusResPacket* pkt = NULL;
         if ((ret = expect_message<SrsOnStatusResPacket>(&msg, &pkt)) != ERROR_SUCCESS) {
             srs_error("expect publish response message(NetStream.Publish.Start) failed. ret=%d", ret);
-            return ret;
+            // donot return error here, because some CDN like fastweb donot send this message.
+            return ERROR_SUCCESS;
         }
         SrsAutoFree(SrsCommonMessage, msg);
         SrsAutoFree(SrsOnStatusResPacket, pkt);
@@ -2387,6 +2388,18 @@ int SrsRtmpClient::metadata(const RtmpMetadata &metadata, int stream_id)
         return ret;
     }
     
+    return ret;
+}
+
+int SrsRtmpClient::close_stream(int stream_id)
+{
+    int ret = ERROR_SUCCESS;
+    SrsCloseStreamPacket *pkt = new SrsCloseStreamPacket();
+    pkt->transaction_id = stream_id;
+    
+    if ((ret = protocol->send_and_free_packet(pkt, stream_id)) != ERROR_SUCCESS) {
+        srs_error("send closeStream failed. stream_id=%d, ret=%d", stream_id, ret);
+    }
     return ret;
 }
 

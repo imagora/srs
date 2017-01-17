@@ -846,6 +846,10 @@ public:
      * metadata.
      */
     virtual int metadata(const RtmpMetadata &metadata, int stream_id);
+    /**
+     * close stream
+     */
+    virtual int close_stream(int stream_id);
 public:
     /**
      * expect a specified message, drop others util got specified one.
