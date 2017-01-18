@@ -569,7 +569,9 @@ void srs_rtmp_destroy(srs_rtmp_t rtmp)
     }
     
     Context* context = (Context*)rtmp;
-    context->rtmp->close_stream(context->stream_id);
+    if (context->rtmp) {
+        context->rtmp->close_stream(context->stream_id);
+    }
     srs_freep(context);
 }
 
