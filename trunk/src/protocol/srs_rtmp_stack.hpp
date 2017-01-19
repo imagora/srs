@@ -76,11 +76,17 @@ class IMergeReadHandler;
 /**
  * amf0 command message, command name macros
  */
+// NetConnection command
 #define RTMP_AMF0_COMMAND_CONNECT               "connect"               // 1
+#define RTMP_AMF0_COMMAND_CLOSE                 "close"
 #define RTMP_AMF0_COMMAND_CREATE_STREAM         "createStream"          // 2
+
+// NetStream commands
 #define RTMP_AMF0_COMMAND_CLOSE_STREAM          "closeStream"           // 0
 #define RTMP_AMF0_COMMAND_PLAY                  "play"
 #define RTMP_AMF0_COMMAND_PAUSE                 "pause"
+#define RTMP_AMF0_COMMAND_PUBLISH               "publish"               // 0
+
 #define RTMP_AMF0_COMMAND_ON_BW_DONE            "onBWDone"
 #define RTMP_AMF0_COMMAND_ON_STATUS             "onStatus"
 #define RTMP_AMF0_COMMAND_RESULT                "_result"
@@ -88,8 +94,9 @@ class IMergeReadHandler;
 #define RTMP_AMF0_COMMAND_RELEASE_STREAM        "releaseStream"         // 0
 #define RTMP_AMF0_COMMAND_FC_PUBLISH            "FCPublish"             // 3
 #define RTMP_AMF0_COMMAND_UNPUBLISH             "FCUnpublish"
-#define RTMP_AMF0_COMMAND_PUBLISH               "publish"               // 0
+
 #define RTMP_AMF0_DATA_SAMPLE_ACCESS            "|RtmpSampleAccess"
+
 
 // Ksyun com.
 #define RTMP_AMF0_COMMAND_KSY                   "ksy_live_server"
@@ -1347,9 +1354,14 @@ public:
 public:
     SrsCloseStreamPacket();
     virtual ~SrsCloseStreamPacket();
+    
+    int get_prefer_cid();
+    int get_message_type();
+    
 // decode functions for concrete packet to override.
 public:
     virtual int decode(SrsStream* stream);
+    virtual int encode_packet(SrsStream* stream);
 };
 
 /**

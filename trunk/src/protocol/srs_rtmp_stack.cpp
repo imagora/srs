@@ -3844,6 +3844,16 @@ SrsCloseStreamPacket::~SrsCloseStreamPacket()
     srs_freep(command_object);
 }
 
+int SrsCloseStreamPacket::get_prefer_cid()
+{
+    return RTMP_CID_OverStream2;
+}
+
+int SrsCloseStreamPacket::get_message_type()
+{
+    return RTMP_MSG_AMF0CommandMessage;
+}
+
 int SrsCloseStreamPacket::decode(SrsStream* stream)
 {
     int ret = ERROR_SUCCESS;
@@ -3864,6 +3874,29 @@ int SrsCloseStreamPacket::decode(SrsStream* stream)
     }
     srs_info("amf0 decode closeStream packet success");
 
+    return ret;
+}
+
+int SrsCloseStreamPacket::encode_packet(SrsStream *stream)
+{
+    int ret = ERROR_SUCCESS;
+    
+    if ((ret = srs_amf0_write_string(stream, command_name)) != ERROR_SUCCESS) {
+        srs_error("amf0 encode closeStream command_name failed. ret=%d", ret);
+        return ret;
+    }
+    
+    if ((ret = srs_amf0_write_number(stream, transaction_id)) != ERROR_SUCCESS) {
+        srs_error("amf0 encode closeStream transaction_id failed. ret=%d", ret);
+        return ret;
+    }
+    
+    if ((ret = srs_amf0_write_null(stream)) != ERROR_SUCCESS) {
+        srs_error("amf0 encode closeStream command_object failed. ret=%d", ret);
+        return ret;
+    }
+    srs_info("amf0 encode closeStream packet success.");
+    
     return ret;
 }
 
