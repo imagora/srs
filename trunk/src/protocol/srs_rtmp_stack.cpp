@@ -2398,6 +2398,18 @@ int SrsRtmpClient::close_stream(int stream_id)
     if ((ret = protocol->send_and_free_packet(pkt, stream_id)) != ERROR_SUCCESS) {
         srs_error("send closeStream failed. stream_id=%d, ret=%d", stream_id, ret);
     }
+    
+    // expect result of closeStream
+    if (true) {
+        SrsCommonMessage* msg = NULL;
+        SrsOnStatusResPacket* pkt = NULL;
+        if ((ret = expect_message<SrsOnStatusResPacket>(&msg, &pkt)) != ERROR_SUCCESS) {
+            srs_error("expect publish response message(NetStream.Publish.closeStream) failed. ret=%d", ret);
+            return ERROR_SUCCESS;
+        }
+        SrsAutoFree(SrsCommonMessage, msg);
+        SrsAutoFree(SrsOnStatusResPacket, pkt);
+    }
     return ret;
 }
 
@@ -3840,6 +3852,12 @@ SrsCloseStreamPacket::SrsCloseStreamPacket()
 SrsCloseStreamPacket::~SrsCloseStreamPacket()
 {
     srs_freep(command_object);
+}
+
+int SrsCloseStreamPacket::get_size()
+{
+    return SrsAmf0Size::str(command_name) + SrsAmf0Size::number()
+    + SrsAmf0Size::null();
 }
 
 int SrsCloseStreamPacket::get_prefer_cid()

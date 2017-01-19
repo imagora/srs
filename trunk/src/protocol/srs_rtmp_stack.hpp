@@ -1355,8 +1355,9 @@ public:
     SrsCloseStreamPacket();
     virtual ~SrsCloseStreamPacket();
     
-    int get_prefer_cid();
-    int get_message_type();
+    virtual int get_size();
+    virtual int get_prefer_cid();
+    virtual int get_message_type();
     
 // decode functions for concrete packet to override.
 public:
