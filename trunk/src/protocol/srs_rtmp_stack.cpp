@@ -2395,8 +2395,6 @@ int SrsRtmpClient::close_stream(int stream_id)
 {
     int ret = ERROR_SUCCESS;
     SrsCloseStreamPacket *pkt = new SrsCloseStreamPacket();
-    pkt->transaction_id = stream_id;
-    
     if ((ret = protocol->send_and_free_packet(pkt, stream_id)) != ERROR_SUCCESS) {
         srs_error("send closeStream failed. stream_id=%d, ret=%d", stream_id, ret);
     }
