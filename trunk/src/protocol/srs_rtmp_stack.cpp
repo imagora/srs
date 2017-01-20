@@ -2401,29 +2401,35 @@ int SrsRtmpClient::metadata(const RtmpMetadata &metadata, int stream_id)
 int SrsRtmpClient::close_stream(int stream_id)
 {
     int ret = ERROR_SUCCESS;
+    if (stream_id <= 0) {
+        return ret;
+    }
+    
     // closeStream
     if (true) {
         SrsCloseStreamPacket *pkt = new SrsCloseStreamPacket();
-        if ((ret = protocol->send_and_free_packet(pkt, stream_id)) != ERROR_SUCCESS) {
+        // stream_id set to 0 here
+        if ((ret = protocol->send_and_free_packet(pkt, 0)) != ERROR_SUCCESS) {
             srs_error("send closeStream failed. stream_id=%d, ret=%d", stream_id, ret);
             return ret;
         }
     }
     
-    // expect result of closeStream
-    if (true) {
-        SrsCommonMessage* msg = NULL;
-        SrsOnStatusResPacket* pkt = NULL;
-        if ((ret = expect_message<SrsOnStatusResPacket>(&msg, &pkt)) != ERROR_SUCCESS) {
-            srs_error("expect publish response message(NetStream.Publish.closeStream) failed. ret=%d", ret);
-            return ERROR_SUCCESS;
-        }
-        SrsAutoFree(SrsCommonMessage, msg);
-        SrsAutoFree(SrsOnStatusResPacket, pkt);
-    }
+//    // expect result of closeStream
+//    if (true) {
+//        SrsCommonMessage* msg = NULL;
+//        SrsOnStatusResPacket* pkt = NULL;
+//        if ((ret = expect_message<SrsOnStatusResPacket>(&msg, &pkt)) != ERROR_SUCCESS) {
+//            // srs_error("expect publish response message(NetStream.Publish.closeStream) failed. ret=%d", ret);
+//            return ERROR_SUCCESS;
+//        }
+//        SrsAutoFree(SrsCommonMessage, msg);
+//        SrsAutoFree(SrsOnStatusResPacket, pkt);
+//    }
     
     // deleteStream
     if (true) {
+        // use stream_id here
         SrsDeleteStreamPacket *pkt = new SrsDeleteStreamPacket(stream_id);
         if ((ret = protocol->send_and_free_packet(pkt, stream_id)) != ERROR_SUCCESS) {
             srs_error("send closeStream failed. stream_id=%d, ret=%d", stream_id, ret);
@@ -2431,17 +2437,17 @@ int SrsRtmpClient::close_stream(int stream_id)
         }
     }
     
-    // expect result of deleteStream
-    if (true) {
-        SrsCommonMessage* msg = NULL;
-        SrsOnStatusResPacket* pkt = NULL;
-        if ((ret = expect_message<SrsOnStatusResPacket>(&msg, &pkt)) != ERROR_SUCCESS) {
-            srs_error("expect publish response message(NetStream.Publish.deleteStream) failed. ret=%d", ret);
-            return ERROR_SUCCESS;
-        }
-        SrsAutoFree(SrsCommonMessage, msg);
-        SrsAutoFree(SrsOnStatusResPacket, pkt);
-    }
+//    // expect result of deleteStream
+//    if (true) {
+//        SrsCommonMessage* msg = NULL;
+//        SrsOnStatusResPacket* pkt = NULL;
+//        if ((ret = expect_message<SrsOnStatusResPacket>(&msg, &pkt)) != ERROR_SUCCESS) {
+//            srs_error("expect publish response message(NetStream.Publish.deleteStream) failed. ret=%d", ret);
+//            return ERROR_SUCCESS;
+//        }
+//        SrsAutoFree(SrsCommonMessage, msg);
+//        SrsAutoFree(SrsOnStatusResPacket, pkt);
+//    }
     return ret;
 }
 
