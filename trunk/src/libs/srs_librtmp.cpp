@@ -575,6 +575,8 @@ void srs_rtmp_destroy(srs_rtmp_t rtmp)
     if (!rtmp) {
         return;
     }
+    
+    Context* context = (Context*)rtmp;
     srs_freep(context);
 }
 
