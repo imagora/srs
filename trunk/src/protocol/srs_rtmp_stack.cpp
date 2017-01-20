@@ -5071,10 +5071,6 @@ int SrsOnStatusResPacket::decode(SrsStream *stream)
         return ret;
     }
     
-    if ((ret = srs_amf0_read_any(stream, data)) != ERROR_SUCCESS) {
-        srs_warn("amf0 decode onStatus data failed. ret=%d", ret);
-    }
-    
     // object not decode
     
     srs_info("amf0 decode onStatus response packet success");
