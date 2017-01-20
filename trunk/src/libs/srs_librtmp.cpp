@@ -561,16 +561,19 @@ srs_rtmp_t srs_rtmp_create2(const char* url)
     
     return context;
 }
+    
+void srs_rtmp_close(srs_rtmp_t rtmp)
+{
+    Context* context = (Context*)rtmp;
+    if (context->rtmp != NULL) {
+        context->rtmp->close_stream(context->stream_id);
+    }
+}
 
 void srs_rtmp_destroy(srs_rtmp_t rtmp)
 {
     if (!rtmp) {
         return;
-    }
-    
-    Context* context = (Context*)rtmp;
-    if (context->rtmp != NULL) {
-        context->rtmp->close_stream(context->stream_id);
     }
     srs_freep(context);
 }

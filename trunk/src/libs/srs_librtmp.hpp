@@ -108,8 +108,14 @@ extern srs_rtmp_t srs_rtmp_create(const char* url);
 */
 extern srs_rtmp_t srs_rtmp_create2(const char* url);
 /**
-* close and destroy the rtmp stack.
-* @remark, user should never use the rtmp again.
+* close the rtmp statck.
+* @param rtmp handler to close
+* @remark this shoud use befor destroy
+*/
+extern void srs_rtmp_close(srs_rtmp_t rtmp);
+/**
+* destroy the rtmp stack.
+* @remark close rtmp first, then destroy it, user should never use the rtmp again.
 */
 extern void srs_rtmp_destroy(srs_rtmp_t rtmp);
 /**
