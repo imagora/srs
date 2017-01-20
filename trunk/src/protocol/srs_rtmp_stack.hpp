@@ -82,7 +82,8 @@ class IMergeReadHandler;
 #define RTMP_AMF0_COMMAND_CREATE_STREAM         "createStream"          // 2
 
 // NetStream commands
-#define RTMP_AMF0_COMMAND_CLOSE_STREAM          "closeStream"           // 0
+#define RTMP_AMF0_COMMAND_CLOSE_STREAM          "closeStream"           // 8
+#define RTMP_AMF0_COMMAND_DELETE_STREAM         "deleteStream"          // 3
 #define RTMP_AMF0_COMMAND_PLAY                  "play"
 #define RTMP_AMF0_COMMAND_PAUSE                 "pause"
 #define RTMP_AMF0_COMMAND_PUBLISH               "publish"               // 0
@@ -1361,6 +1362,31 @@ public:
     
 // decode functions for concrete packet to override.
 public:
+    virtual int decode(SrsStream* stream);
+    virtual int encode_packet(SrsStream* stream);
+};
+
+/**
+* client delete stream packet.
+*/
+class SrsDeleteStreamPacket : public SrsPacket
+{
+public:
+    /** Name of the command, set to "deleteStream". */
+    std::string command_name;
+    /** Transaction ID set to 5. */
+    double transaction_id;
+    /** Command information object does not exist. Set to null type. */
+    SrsAmf0Any* command_object; // null
+    /** Stream ID. */
+    double stream_id;
+public:
+    SrsDeleteStreamPacket(double stream_id_);
+    virtual ~SrsDeleteStreamPacket();
+    
+    virtual int get_size();
+    virtual int get_prefer_cid();
+    virtual int get_message_type();
     virtual int decode(SrsStream* stream);
     virtual int encode_packet(SrsStream* stream);
 };

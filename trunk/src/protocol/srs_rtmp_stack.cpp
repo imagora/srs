@@ -2394,9 +2394,13 @@ int SrsRtmpClient::metadata(const RtmpMetadata &metadata, int stream_id)
 int SrsRtmpClient::close_stream(int stream_id)
 {
     int ret = ERROR_SUCCESS;
-    SrsCloseStreamPacket *pkt = new SrsCloseStreamPacket();
-    if ((ret = protocol->send_and_free_packet(pkt, stream_id)) != ERROR_SUCCESS) {
-        srs_error("send closeStream failed. stream_id=%d, ret=%d", stream_id, ret);
+    // closeStream
+    if (true) {
+        SrsCloseStreamPacket *pkt = new SrsCloseStreamPacket();
+        if ((ret = protocol->send_and_free_packet(pkt, stream_id)) != ERROR_SUCCESS) {
+            srs_error("send closeStream failed. stream_id=%d, ret=%d", stream_id, ret);
+            return ret;
+        }
     }
     
     // expect result of closeStream
@@ -2405,6 +2409,27 @@ int SrsRtmpClient::close_stream(int stream_id)
         SrsOnStatusResPacket* pkt = NULL;
         if ((ret = expect_message<SrsOnStatusResPacket>(&msg, &pkt)) != ERROR_SUCCESS) {
             srs_error("expect publish response message(NetStream.Publish.closeStream) failed. ret=%d", ret);
+            return ERROR_SUCCESS;
+        }
+        SrsAutoFree(SrsCommonMessage, msg);
+        SrsAutoFree(SrsOnStatusResPacket, pkt);
+    }
+    
+    // deleteStream
+    if (true) {
+        SrsDeleteStreamPacket *pkt = new SrsDeleteStreamPacket(stream_id);
+        if ((ret = protocol->send_and_free_packet(pkt, stream_id)) != ERROR_SUCCESS) {
+            srs_error("send closeStream failed. stream_id=%d, ret=%d", stream_id, ret);
+            return ret;
+        }
+    }
+    
+    // expect result of deleteStream
+    if (true) {
+        SrsCommonMessage* msg = NULL;
+        SrsOnStatusResPacket* pkt = NULL;
+        if ((ret = expect_message<SrsOnStatusResPacket>(&msg, &pkt)) != ERROR_SUCCESS) {
+            srs_error("expect publish response message(NetStream.Publish.deleteStream) failed. ret=%d", ret);
             return ERROR_SUCCESS;
         }
         SrsAutoFree(SrsCommonMessage, msg);
@@ -3913,6 +3938,92 @@ int SrsCloseStreamPacket::encode_packet(SrsStream *stream)
     }
     srs_info("amf0 encode closeStream packet success.");
     
+    return ret;
+}
+
+SrsDeleteStreamPacket::SrsDeleteStreamPacket(double stream_id_)
+{
+    command_name = RTMP_AMF0_COMMAND_DELETE_STREAM;
+    transaction_id = 5;
+    command_object = SrsAmf0Any::null();
+    stream_id = stream_id_;
+}
+
+SrsDeleteStreamPacket::~SrsDeleteStreamPacket()
+{
+    srs_freep(command_object);
+}
+
+int SrsDeleteStreamPacket::get_size()
+{
+    // command_name + transaction_id + command_object + stream_id
+    return SrsAmf0Size::str(command_name) + SrsAmf0Size::number()
+    + SrsAmf0Size::null() + SrsAmf0Size::number();
+}
+
+int SrsDeleteStreamPacket::get_prefer_cid()
+{
+    return RTMP_CID_OverConnection;
+}
+
+int SrsDeleteStreamPacket::get_message_type()
+{
+    return RTMP_MSG_AMF0CommandMessage;
+}
+
+int SrsDeleteStreamPacket::decode(SrsStream *stream)
+{
+    int ret = ERROR_SUCCESS;
+    
+    if ((ret = srs_amf0_read_string(stream, command_name)) != ERROR_SUCCESS) {
+        srs_error("amf0 decode deleteStream command_name failed. ret=%d", ret);
+        return ret;
+    }
+    
+    if ((ret = srs_amf0_read_number(stream, transaction_id)) != ERROR_SUCCESS) {
+        srs_error("amf0 decode deleteStream transaction_id failed. ret=%d", ret);
+        return ret;
+    }
+    
+    if ((ret = srs_amf0_read_null(stream)) != ERROR_SUCCESS) {
+        srs_error("amf0 decode deleteStream command_object failed. ret=%d", ret);
+        return ret;
+    }
+    
+    if ((ret = srs_amf0_read_number(stream, stream_id)) != ERROR_SUCCESS) {
+        srs_error("amf0 decode deleteStream stream_id failed. ret=%d", ret);
+        return ret;
+    }
+    
+    srs_info("amf0 decode deleteStream packet success");
+    return ret;
+}
+
+int SrsDeleteStreamPacket::encode_packet(SrsStream *stream)
+{
+    int ret = ERROR_SUCCESS;
+    
+    if ((ret = srs_amf0_write_string(stream, command_name)) != ERROR_SUCCESS) {
+        srs_error("amf0 encode deleteStream command_name failed. ret=%d", ret);
+        return ret;
+    }
+    
+    if ((ret = srs_amf0_write_number(stream, transaction_id)) != ERROR_SUCCESS) {
+        srs_error("amf0 encode deleteStream transaction_id failed. ret=%d", ret);
+        return ret;
+    }
+    
+    if ((ret = srs_amf0_write_null(stream)) != ERROR_SUCCESS) {
+        srs_error("amf0 encode deleteStream command_object failed. ret=%d", ret);
+        return ret;
+    }
+    
+    if ((ret = srs_amf0_write_number(stream, stream_id)) != ERROR_SUCCESS) {
+        srs_error("amf0 encode deleteStream stream_id failed. ret=%d", ret);
+        return ret;
+    }
+    
+    srs_info("amf0 encode deleteStream packet success.");
     return ret;
 }
 
