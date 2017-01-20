@@ -2343,6 +2343,13 @@ int SrsRtmpClient::fmle_publish(string stream, int& stream_id)
             // donot return error here, because some CDN like fastweb donot send this message.
             return ERROR_SUCCESS;
         }
+        
+        std::string code = pkt->get_code();
+        if (!code.empty() && code != "NetStream.Publish.Start") {
+            srs_warn("cannot publish stream now, onStatus: %s", code.c_str());
+            ret = ERROR_RTMP_STATUS_ERROR;
+        }
+        
         SrsAutoFree(SrsCommonMessage, msg);
         SrsAutoFree(SrsOnStatusResPacket, pkt);
         srs_info("get publish response message");
@@ -5114,6 +5121,15 @@ int SrsOnStatusResPacket::encode_packet(SrsStream* stream)
     srs_info("encode onStatus(Data) packet success.");
     
     return ret;
+}
+
+std::string SrsOnStatusResPacket::get_code()
+{
+    SrsAmf0Any *value = data->get_property("code");
+    if (value != NULL && value->is_string()) {
+        return value->to_str();
+    }
+    return std::string("");
 }
 
 SrsSampleAccessPacket::SrsSampleAccessPacket()

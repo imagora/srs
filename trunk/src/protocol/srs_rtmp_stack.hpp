@@ -1886,6 +1886,10 @@ public:
 public:
     virtual int get_prefer_cid();
     virtual int get_message_type();
+    
+public:
+    std::string get_code();
+    
 protected:
     virtual int get_size();
     virtual int encode_packet(SrsStream* stream);
