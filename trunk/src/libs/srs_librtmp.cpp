@@ -564,6 +564,10 @@ srs_rtmp_t srs_rtmp_create2(const char* url)
     
 void srs_rtmp_close(srs_rtmp_t rtmp)
 {
+    if (!rtmp) {
+        return;
+    }
+    
     Context* context = (Context*)rtmp;
     if (context->rtmp != NULL) {
         context->rtmp->close_stream(context->stream_id);
