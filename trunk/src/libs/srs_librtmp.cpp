@@ -1507,6 +1507,7 @@ int srs_h264_write_raw_frames(srs_rtmp_t rtmp,
                 || srs_h264_is_duplicated_sps_error(ret)
                 || srs_h264_is_duplicated_pps_error(ret)
             ) {
+                error_code_return = ERROR_SUCCESS;
                 continue;
             }
             
