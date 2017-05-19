@@ -212,13 +212,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     {
         SrsBlockSyncSocket* skt = (SrsBlockSyncSocket*)ctx;
         
-        srs_update_system_time_ms();
-        if (skt->last_send_time != 0 && srs_get_system_time_ms() - skt->last_send_time > skt->send_timeout / 1000) {
-            srs_error("cannot send packet last send: %" PRIu64 ", now: %" PRIu64 ", timeout: %" PRIu64 "", skt->last_send_time, srs_get_system_time_ms(), skt->send_timeout);
-            skt->last_send_time = 0;
-            return ERROR_SOCKET_WRITE;
-        }
-        
         int ret = ERROR_SUCCESS;
         ssize_t nb_write = ::writev(skt->fd, iov, iov_size);
         
