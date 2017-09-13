@@ -1319,30 +1319,51 @@ int srs_write_h264_ipb_frame(Context* context,
     if (nal_unit_type == SrsAvcNaluTypeIDR) {
         frame_type = SrsCodecVideoAVCFrameKeyFrame;
     }
-    
-    std::string sei_ibp;
-    if (context->h264_sei_changed) {
-        if ((ret = context->avc_raw.mux_sei_ipb_frame(context->h264_sei.c_str(), context->h264_sei.size(), sei_ibp)) != ERROR_SUCCESS) {
-            srs_warn("mux sei frame failed");
-        }
-        context->h264_sei_changed = false;
-    }
-    
+
     std::string ibp;
     if ((ret = context->avc_raw.mux_sei_ipb_frame(frame, frame_size, ibp)) != ERROR_SUCCESS) {
         return ret;
     }
-    
-    // merge sei and ibp
-    sei_ibp.insert(sei_ibp.end(), ibp.begin(), ibp.end());
-    
+
     int8_t avc_packet_type = SrsCodecVideoAVCTypeNALU;
     char* flv = NULL;
     int nb_flv = 0;
-    if ((ret = context->avc_raw.mux_avc2flv(sei_ibp, frame_type, avc_packet_type, dts, pts, &flv, &nb_flv)) != ERROR_SUCCESS) {
+    if ((ret = context->avc_raw.mux_avc2flv(ibp, frame_type, avc_packet_type, dts, pts, &flv, &nb_flv)) != ERROR_SUCCESS) {
         return ret;
     }
     
+    // the timestamp in rtmp message header is dts.
+    u_int32_t timestamp = dts;
+    return srs_rtmp_write_packet(context, SRS_RTMP_TYPE_VIDEO, timestamp, flv, nb_flv);
+}
+
+int srs_write_h264_sei(Context* context, u_int32_t dts, u_int32_t pts)
+{
+    int ret = ERROR_SUCCESS;
+
+    // send when sei changed.
+    if (!context->h264_sei_changed) {
+        return ret;
+    }
+
+    // h264 sei to h264 packet.
+    std::string sei;
+    SrsCodecVideoAVCFrame frame_type = SrsCodecVideoAVCFrameKeyFrame;
+    if (context->h264_sei_changed) {
+        if ((ret = context->avc_raw.mux_sei_ipb_frame(context->h264_sei.c_str(), context->h264_sei.size(), sei)) != ERROR_SUCCESS) {
+            srs_warn("mux sei frame failed");
+        }
+        context->h264_sei_changed = false;
+    }
+
+    // h264 packet to flv packet.
+    int8_t avc_packet_type = SrsCodecVideoAVCTypeNALU;
+    char* flv = NULL;
+    int nb_flv = 0;
+    if ((ret = context->avc_raw.mux_avc2flv(sei, frame_type, avc_packet_type, dts, pts, &flv, &nb_flv)) != ERROR_SUCCESS) {
+        return ret;
+    }
+
     // the timestamp in rtmp message header is dts.
     u_int32_t timestamp = dts;
     return srs_rtmp_write_packet(context, SRS_RTMP_TYPE_VIDEO, timestamp, flv, nb_flv);
@@ -1449,6 +1470,11 @@ int srs_write_h264_raw_frame(Context* context,
         
     // send pps+sps before ipb frames when sps/pps changed.
     if ((ret = srs_write_h264_sps_pps(context, dts, pts)) != ERROR_SUCCESS) {
+        return ret;
+    }
+
+    // send sei when changed
+    if ((ret = srs_write_h264_sei(context, dts, pts)) != ERROR_SUCCESS) {
         return ret;
     }
 
