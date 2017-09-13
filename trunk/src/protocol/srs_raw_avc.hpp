@@ -51,7 +51,7 @@ public:
     * @param pframe the output h.264 frame in stream. user should never free it.
     * @param pnb_frame the output h.264 frame size.
     */
-    virtual int annexb_demux(SrsStream* stream, char** pframe, int* pnb_frame);
+    virtual int annexb_demux(SrsStream* stream, char** pframe, int* pnb_frame, bool *is_end);
     /**
     * whether the frame is sps or pps.
     */

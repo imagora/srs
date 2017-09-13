@@ -1299,7 +1299,7 @@ int srs_aac_adts_frame_size(char* aac_raw_data, int ac_raw_size)
 * write h264 IPB-frame.
 */
 int srs_write_h264_ipb_frame(Context* context, 
-    char* frame, int frame_size, u_int32_t dts, u_int32_t pts
+    char* frame, int frame_size, u_int32_t dts, u_int32_t pts, bool is_end
 ) {
     int ret = ERROR_SUCCESS;
     
@@ -1320,17 +1320,25 @@ int srs_write_h264_ipb_frame(Context* context,
         frame_type = SrsCodecVideoAVCFrameKeyFrame;
     }
 
+    static std::string ibp_combined = "";
     std::string ibp;
     if ((ret = context->avc_raw.mux_sei_ipb_frame(frame, frame_size, ibp)) != ERROR_SUCCESS) {
         return ret;
     }
 
+    if (!is_end) {
+        ibp_combined.insert(ibp_combined.end(), ibp.begin(), ibp.end());
+        return ERROR_SUCCESS;
+    }
+
     int8_t avc_packet_type = SrsCodecVideoAVCTypeNALU;
     char* flv = NULL;
     int nb_flv = 0;
-    if ((ret = context->avc_raw.mux_avc2flv(ibp, frame_type, avc_packet_type, dts, pts, &flv, &nb_flv)) != ERROR_SUCCESS) {
+    if ((ret = context->avc_raw.mux_avc2flv(ibp_combined, frame_type, avc_packet_type, dts, pts, &flv, &nb_flv)) != ERROR_SUCCESS) {
         return ret;
     }
+
+    ibp_combined = "";
     
     // the timestamp in rtmp message header is dts.
     u_int32_t timestamp = dts;
@@ -1410,7 +1418,7 @@ int srs_write_h264_sps_pps(Context* context, u_int32_t dts, u_int32_t pts)
 * write h264 raw frame, maybe sps/pps/IPB-frame.
 */
 int srs_write_h264_raw_frame(Context* context,
-    char* frame, int frame_size, u_int32_t dts, u_int32_t pts, bool isIFrame
+    char* frame, int frame_size, u_int32_t dts, u_int32_t pts, bool isIFrame, bool is_end
 ) {
     int ret = ERROR_SUCCESS;
 
@@ -1479,7 +1487,7 @@ int srs_write_h264_raw_frame(Context* context,
     }
 
     // ibp frame.
-    return srs_write_h264_ipb_frame(context, frame, frame_size, dts, pts);
+    return srs_write_h264_ipb_frame(context, frame, frame_size, dts, pts, is_end);
 }
 
 /**
@@ -1510,7 +1518,8 @@ int srs_h264_write_raw_frames(srs_rtmp_t rtmp,
     while (!context->h264_raw_stream.empty()) {
         char* frame = NULL;
         int frame_size = 0;
-        if ((ret = context->avc_raw.annexb_demux(&context->h264_raw_stream, &frame, &frame_size)) != ERROR_SUCCESS) {
+        bool is_end = false;
+        if ((ret = context->avc_raw.annexb_demux(&context->h264_raw_stream, &frame, &frame_size, &is_end)) != ERROR_SUCCESS) {
             return ret;
         }
     
@@ -1525,7 +1534,7 @@ int srs_h264_write_raw_frames(srs_rtmp_t rtmp,
         }
 
         // it may be return error, but we must process all packets.
-        if ((ret = srs_write_h264_raw_frame(context, frame, frame_size, dts, pts, isIFrame)) != ERROR_SUCCESS) {
+        if ((ret = srs_write_h264_raw_frame(context, frame, frame_size, dts, pts, isIFrame, is_end)) != ERROR_SUCCESS) {
             error_code_return = ret;
             
             // ignore known error, process all packets.

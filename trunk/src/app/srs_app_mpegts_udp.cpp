@@ -352,7 +352,8 @@ int SrsMpegtsOverUdp::on_ts_video(SrsTsMessage* msg, SrsStream* avs)
     while (!avs->empty()) {
         char* frame = NULL;
         int frame_size = 0;
-        if ((ret = avc->annexb_demux(avs, &frame, &frame_size)) != ERROR_SUCCESS) {
+        bool is_end = false;
+        if ((ret = avc->annexb_demux(avs, &frame, &frame_size, &is_end)) != ERROR_SUCCESS) {
             return ret;
         }
         
