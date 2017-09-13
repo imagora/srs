@@ -1330,6 +1330,7 @@ int srs_write_h264_ipb_frame(Context* context,
         ibp_combined.insert(ibp_combined.end(), ibp.begin(), ibp.end());
         return ERROR_SUCCESS;
     }
+    ibp_combined.insert(ibp_combined.end(), ibp.begin(), ibp.end());
 
     int8_t avc_packet_type = SrsCodecVideoAVCTypeNALU;
     char* flv = NULL;
