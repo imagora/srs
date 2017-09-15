@@ -295,7 +295,7 @@ int SrsRawH264Stream::mux_sei_ipb_frame(const char* frame, int nb_frame, string&
     return ret;
 }
 
-int SrsRawH264Stream::mux_avc2flv(string video, int8_t frame_type, int8_t avc_packet_type, u_int32_t dts, u_int32_t pts, char** flv, int* nb_flv)
+int SrsRawH264Stream::mux_avc2flv(const string &video, int8_t frame_type, int8_t avc_packet_type, u_int32_t dts, u_int32_t pts, char** flv, int* nb_flv)
 {
     int ret = ERROR_SUCCESS;
     

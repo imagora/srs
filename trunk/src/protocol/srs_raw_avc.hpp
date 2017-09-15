@@ -87,7 +87,7 @@ public:
     * @param flv output the muxed flv packet.
     * @param nb_flv output the muxed flv size.
     */
-    virtual int mux_avc2flv(std::string video, int8_t frame_type, int8_t avc_packet_type, u_int32_t dts, u_int32_t pts, char** flv, int* nb_flv);
+    virtual int mux_avc2flv(const std::string &video, int8_t frame_type, int8_t avc_packet_type, u_int32_t dts, u_int32_t pts, char** flv, int* nb_flv);
 };
 
 /**

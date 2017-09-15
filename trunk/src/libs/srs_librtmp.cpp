@@ -93,6 +93,7 @@ struct Context
     std::string h264_sps;
     std::string h264_pps;
     std::string h264_sei;
+    std::string h264_key_frame;
     // whether the sps and pps sent,
     // @see https://github.com/ossrs/srs/issues/203
     bool h264_sps_pps_sent;
@@ -1298,9 +1299,8 @@ int srs_aac_adts_frame_size(char* aac_raw_data, int ac_raw_size)
 /**
 * write h264 IPB-frame.
 */
-int srs_write_h264_ipb_frame(Context* context, 
-    char* frame, int frame_size, u_int32_t dts, u_int32_t pts, bool is_end
-) {
+int srs_write_h264_ipb_frame(Context* context, char* frame, int frame_size,
+                             u_int32_t dts, u_int32_t pts, bool is_end) {
     int ret = ERROR_SUCCESS;
     
     // when sps or pps not sent, ignore the packet.
@@ -1320,7 +1320,6 @@ int srs_write_h264_ipb_frame(Context* context,
         frame_type = SrsCodecVideoAVCFrameKeyFrame;
     }
 
-    static std::string ibp_combined;
     std::string sei_ibp;
     if (context->h264_sei_changed) {
         if ((ret = context->avc_raw.mux_sei_ipb_frame(context->h264_sei.c_str(), context->h264_sei.size(), sei_ibp)) != ERROR_SUCCESS) {
@@ -1328,27 +1327,25 @@ int srs_write_h264_ipb_frame(Context* context,
         }
         context->h264_sei_changed = false;
     }
-    ibp_combined.insert(ibp_combined.end(), sei_ibp.begin(), sei_ibp.end());
+    context->h264_key_frame.insert(context->h264_key_frame.end(), sei_ibp.begin(), sei_ibp.end());
 
     std::string ibp;
     if ((ret = context->avc_raw.mux_sei_ipb_frame(frame, frame_size, ibp)) != ERROR_SUCCESS) {
         return ret;
     }
 
+    context->h264_key_frame.insert(context->h264_key_frame.end(), ibp.begin(), ibp.end());
     if (!is_end) {
-        ibp_combined.insert(ibp_combined.end(), ibp.begin(), ibp.end());
         return ERROR_SUCCESS;
     }
-    ibp_combined.insert(ibp_combined.end(), ibp.begin(), ibp.end());
 
     int8_t avc_packet_type = SrsCodecVideoAVCTypeNALU;
     char* flv = NULL;
     int nb_flv = 0;
-    if ((ret = context->avc_raw.mux_avc2flv(ibp_combined, frame_type, avc_packet_type, dts, pts, &flv, &nb_flv)) != ERROR_SUCCESS) {
+    if ((ret = context->avc_raw.mux_avc2flv(context->h264_key_frame, frame_type, avc_packet_type, dts, pts, &flv, &nb_flv)) != ERROR_SUCCESS) {
         return ret;
     }
-
-    ibp_combined.clear();
+    context->h264_key_frame.clear();
     
     // the timestamp in rtmp message header is dts.
     u_int32_t timestamp = dts;
@@ -1395,9 +1392,9 @@ int srs_write_h264_sps_pps(Context* context, u_int32_t dts, u_int32_t pts)
 /**
 * write h264 raw frame, maybe sps/pps/IPB-frame.
 */
-int srs_write_h264_raw_frame(Context* context,
-    char* frame, int frame_size, u_int32_t dts, u_int32_t pts, bool isIFrame, bool is_end
-) {
+int srs_write_h264_raw_frame(Context* context, char* frame, int frame_size,
+                             u_int32_t dts, u_int32_t pts, bool isIFrame,
+                             bool is_end) {
     int ret = ERROR_SUCCESS;
 
     // for sps
