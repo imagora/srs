@@ -1450,10 +1450,22 @@ int srs_write_h264_raw_frame(Context* context, char* frame, int frame_size,
         
         return ret;
     }
-        
+     
     // send pps+sps before ipb frames when sps/pps changed.
     if ((ret = srs_write_h264_sps_pps(context, dts, pts)) != ERROR_SUCCESS) {
         return ret;
+    }
+    
+    if (isIFrame && context->h264_key_frame.empty()) {
+        std::string ipb;
+        if ((ret = context->avc_raw.mux_sei_ipb_frame(context->h264_sps.c_str(), context->h264_sps.size(), ipb)) != ERROR_SUCCESS) {
+            return ret;
+        }
+        context->h264_key_frame.insert(context->h264_key_frame.end(), ipb.begin(), ipb.end());
+        if ((ret = context->avc_raw.mux_sei_ipb_frame(context->h264_pps.c_str(), context->h264_pps.size(), ipb)) != ERROR_SUCCESS) {
+            return ret;
+        }
+        context->h264_key_frame.insert(context->h264_key_frame.end(), ipb.begin(), ipb.end());
     }
 
     // ibp frame.
