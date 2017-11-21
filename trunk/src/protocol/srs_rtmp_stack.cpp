@@ -2368,22 +2368,22 @@ int SrsRtmpClient::metadata(const RtmpMetadata &metadata, int stream_id)
     SrsOnMetaDataPacket* pkt = new SrsOnMetaDataPacket();
     pkt->metadata->set("metadatacreator", SrsAmf0Any::str(metadata.m_metadatacreator.c_str()));
     pkt->metadata->set("encoder", SrsAmf0Any::str(metadata.m_encoder.c_str()));
-    pkt->metadata->set("filesize", SrsAmf0Any::number(metadata.m_filesize));
-    pkt->metadata->set("duration", SrsAmf0Any::number(metadata.m_duration));
+//    pkt->metadata->set("filesize", SrsAmf0Any::number(metadata.m_filesize));
+//    pkt->metadata->set("duration", SrsAmf0Any::number(metadata.m_duration));
 //    pkt->metadata->set("servertime", SrsAmf0Any::number(metadata.m_servertime));
     
     // 10 = AAC flv_v10_1.pdf page.70
-    pkt->metadata->set("audiocodecid", SrsAmf0Any::number(metadata.m_audiocodecid));
-    pkt->metadata->set("audiosamplesize", SrsAmf0Any::number(metadata.m_audiosamplesize));
-    pkt->metadata->set("stereo", SrsAmf0Any::boolean(metadata.m_stereo));
-    pkt->metadata->set("audiodatarate", SrsAmf0Any::number(metadata.m_audiodatarate));
-    pkt->metadata->set("audiosamplerate", SrsAmf0Any::number(metadata.m_audiosamplerate));
-    
-    pkt->metadata->set("videocodecid", SrsAmf0Any::number(metadata.m_videocodecid));
-    pkt->metadata->set("videodatarate", SrsAmf0Any::number(metadata.m_videodatarate));
-    pkt->metadata->set("framerate", SrsAmf0Any::number(metadata.m_framerate));
-    pkt->metadata->set("width", SrsAmf0Any::number(metadata.m_width));
-    pkt->metadata->set("height", SrsAmf0Any::number(metadata.m_height));
+//    pkt->metadata->set("audiocodecid", SrsAmf0Any::number(metadata.m_audiocodecid));
+//    pkt->metadata->set("audiosamplesize", SrsAmf0Any::number(metadata.m_audiosamplesize));
+//    pkt->metadata->set("stereo", SrsAmf0Any::boolean(metadata.m_stereo));
+//    pkt->metadata->set("audiodatarate", SrsAmf0Any::number(metadata.m_audiodatarate));
+//    pkt->metadata->set("audiosamplerate", SrsAmf0Any::number(metadata.m_audiosamplerate));
+//
+//    pkt->metadata->set("videocodecid", SrsAmf0Any::number(metadata.m_videocodecid));
+//    pkt->metadata->set("videodatarate", SrsAmf0Any::number(metadata.m_videodatarate));
+//    pkt->metadata->set("framerate", SrsAmf0Any::number(metadata.m_framerate));
+//    pkt->metadata->set("width", SrsAmf0Any::number(metadata.m_width));
+//    pkt->metadata->set("height", SrsAmf0Any::number(metadata.m_height));
     
     
 //    for (auto iter : metadata.m_userDefine) {
