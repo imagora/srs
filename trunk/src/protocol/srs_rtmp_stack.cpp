@@ -2361,9 +2361,9 @@ int SrsRtmpClient::fmle_publish(string stream, int& stream_id)
 int SrsRtmpClient::metadata(const RtmpMetadata &metadata, int stream_id)
 {
     int ret = ERROR_SUCCESS;
-    if (metadata.m_width == 0 || metadata.m_height == 0) {
-        return ret;
-    }
+    //if (metadata.m_width == 0 || metadata.m_height == 0) {
+    //    return ret;
+    //}
     
     SrsOnMetaDataPacket* pkt = new SrsOnMetaDataPacket();
     pkt->metadata->set("metadatacreator", SrsAmf0Any::str(metadata.m_metadatacreator.c_str()));
@@ -2385,10 +2385,10 @@ int SrsRtmpClient::metadata(const RtmpMetadata &metadata, int stream_id)
 //    pkt->metadata->set("width", SrsAmf0Any::number(metadata.m_width));
 //    pkt->metadata->set("height", SrsAmf0Any::number(metadata.m_height));
     
-    
-//    for (auto iter : metadata.m_userDefine) {
-//        pkt->metadata->set(iter.first, iter.second);
-//    }
+    std::map<std::string, std::string>::const_iterator it = metadata.m_userDefine.begin();
+    for (; it != metadata.m_userDefine.end(); it++) {
+        pkt->metadata->set(it->first, SrsAmf0Any::str(it->second.c_str()));
+    }
     
     if ((ret = protocol->send_and_free_packet(pkt, stream_id)) != ERROR_SUCCESS) {
         srs_error("send onMetaData failed. stream_id=%d, width=%u, height=%u, ret=%d", stream_id, metadata.m_width, metadata.m_height, ret);
