@@ -2373,22 +2373,28 @@ int SrsRtmpClient::metadata(const RtmpMetadata &metadata, int stream_id)
 //    pkt->metadata->set("servertime", SrsAmf0Any::number(metadata.m_servertime));
     
     // 10 = AAC flv_v10_1.pdf page.70
-//    pkt->metadata->set("audiocodecid", SrsAmf0Any::number(metadata.m_audiocodecid));
-//    pkt->metadata->set("audiosamplesize", SrsAmf0Any::number(metadata.m_audiosamplesize));
-//    pkt->metadata->set("stereo", SrsAmf0Any::boolean(metadata.m_stereo));
-//    pkt->metadata->set("audiodatarate", SrsAmf0Any::number(metadata.m_audiodatarate));
-//    pkt->metadata->set("audiosamplerate", SrsAmf0Any::number(metadata.m_audiosamplerate));
-//
-//    pkt->metadata->set("videocodecid", SrsAmf0Any::number(metadata.m_videocodecid));
-//    pkt->metadata->set("videodatarate", SrsAmf0Any::number(metadata.m_videodatarate));
-//    pkt->metadata->set("framerate", SrsAmf0Any::number(metadata.m_framerate));
-//    pkt->metadata->set("width", SrsAmf0Any::number(metadata.m_width));
-//    pkt->metadata->set("height", SrsAmf0Any::number(metadata.m_height));
+    if(metadata.m_audiodatarate > 0 && metadata.m_audiosamplerate > 0) {
+        pkt->metadata->set("audiocodecid", SrsAmf0Any::number(metadata.m_audiocodecid));
+        pkt->metadata->set("audiosamplesize", SrsAmf0Any::number(metadata.m_audiosamplesize));
+        //pkt->metadata->set("stereo", SrsAmf0Any::boolean(metadata.m_stereo));
+        pkt->metadata->set("audiodatarate", SrsAmf0Any::number(metadata.m_audiodatarate));
+        pkt->metadata->set("audiosamplerate", SrsAmf0Any::number(metadata.m_audiosamplerate));
+    }
+
+    if(metadata.m_width > 0 && metadata.m_height > 0) {
+        pkt->metadata->set("videocodecid", SrsAmf0Any::number(metadata.m_videocodecid));
+        //pkt->metadata->set("videodatarate", SrsAmf0Any::number(metadata.m_videodatarate));
+        //pkt->metadata->set("framerate", SrsAmf0Any::number(metadata.m_framerate));
+        pkt->metadata->set("width", SrsAmf0Any::number(metadata.m_width));
+        pkt->metadata->set("height", SrsAmf0Any::number(metadata.m_height));
+    }
     
+    #if 0
     std::map<std::string, std::string>::const_iterator it = metadata.m_userDefine.begin();
     for (; it != metadata.m_userDefine.end(); it++) {
         pkt->metadata->set(it->first, SrsAmf0Any::str(it->second.c_str()));
     }
+    #endif
     
     if ((ret = protocol->send_and_free_packet(pkt, stream_id)) != ERROR_SUCCESS) {
         srs_error("send onMetaData failed. stream_id=%d, width=%u, height=%u, ret=%d", stream_id, metadata.m_width, metadata.m_height, ret);
