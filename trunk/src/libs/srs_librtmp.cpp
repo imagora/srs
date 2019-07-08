@@ -502,6 +502,7 @@ int srs_librtmp_context_resolve_host(Context* context)
     
     // connect to server:port
     context->ip = srs_dns_resolve(context->host);
+    srs_trace("dns resolve for %s result %s", context->host.c_str(), context->ip.c_str());
     if (context->ip.empty()) {
         return -1;
     }
