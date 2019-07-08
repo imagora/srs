@@ -76,6 +76,7 @@ int srs_socket_connect(string server, int port, int64_t timeout, st_netfd_t* pst
     
     // connect to server.
     std::string ip = srs_dns_resolve(server);
+    srs_trace("dns resolve for %s result %s", server.c_str(), ip.c_str());
     if (ip.empty()) {
         ret = ERROR_SYSTEM_IP_INVALID;
         srs_error("dns resolve server error, ip empty. ret=%d", ret);
